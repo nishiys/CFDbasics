@@ -1,0 +1,14 @@
+# ninja log v5
+0	147	1585676111696924546	build.ninja	5a94aaa036c5251
+0	1086	1585677204642777622	CMakeFiles/waveSolver1d.dir/src/waveSolver1d.cpp.o	7b2fd28b4f05fea3
+1087	1188	1585677204754340912	bin/waveSolver1d	2b872ff4f6c1bdaf
+1	1167	1585677646983207953	CMakeFiles/waveSolver1d.dir/src/waveSolver1d.cpp.o	7b2fd28b4f05fea3
+1168	1262	1585677647084865779	bin/waveSolver1d	2b872ff4f6c1bdaf
+2	1422	1585677860113673166	CMakeFiles/waveSolver1d.dir/src/waveSolver1d.cpp.o	7b2fd28b4f05fea3
+1422	1536	1585677860237102379	bin/waveSolver1d	2b872ff4f6c1bdaf
+2	971	1585677969855222980	CMakeFiles/waveSolver1d.dir/src/waveSolver1d.cpp.o	7b2fd28b4f05fea3
+971	1050	1585677969942685562	bin/waveSolver1d	2b872ff4f6c1bdaf
+1	1014	1585678832438559625	CMakeFiles/waveSolver1d.dir/src/waveSolver1d.cpp.o	7b2fd28b4f05fea3
+1014	1105	1585678832541157757	bin/waveSolver1d	2b872ff4f6c1bdaf
+2	1096	1585678911693486429	CMakeFiles/waveSolver1d.dir/src/waveSolver1d.cpp.o	7b2fd28b4f05fea3
+1096	1165	1585678911770446095	bin/waveSolver1d	2b872ff4f6c1bdaf

@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/01_waveSolver/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++   -I../include   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk   -o CMakeFiles/waveSolver1d.dir/src/waveSolver1d.cpp.o -c /Users/ysnishi/programs/CFDbasics/01_waveSolver/src/waveSolver1d.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/01_waveSolver/src/waveSolver1d.cpp"
+}
+]
