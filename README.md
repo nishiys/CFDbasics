@@ -3,6 +3,10 @@
 # Code List
 
 ## 1D Wave Equation
+### Scheme
+- Lax scheme
+
+### How to use
 The following command gives you the solution.
 
 ```shell
