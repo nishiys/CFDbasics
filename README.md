@@ -10,7 +10,7 @@ The following command gives you the solution.
 
 cd run
 ./waveSolver1d
-pyhton wavePlot.py
+python wavePlot.py
 ```
 
 ## 1D Shock Tube
