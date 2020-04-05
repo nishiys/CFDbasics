@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/03_shockTube/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++   -I../include   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk   -o CMakeFiles/shockTube.dir/src/ShockTubeSolver.cpp.o -c /Users/ysnishi/programs/CFDbasics/03_shockTube/src/ShockTubeSolver.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/03_shockTube/src/ShockTubeSolver.cpp"
+}
+]

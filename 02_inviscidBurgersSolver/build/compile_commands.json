@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/02_inviscidBurgersSolver/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++   -I../include   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk   -o CMakeFiles/inviscidBurgersSolver.dir/src/inviscidBurgersSolver.cpp.o -c /Users/ysnishi/programs/CFDbasics/02_inviscidBurgersSolver/src/inviscidBurgersSolver.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/02_inviscidBurgersSolver/src/inviscidBurgersSolver.cpp"
+}
+]
