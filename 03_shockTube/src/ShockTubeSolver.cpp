@@ -18,9 +18,6 @@ ShockTubeSolver::ShockTubeSolver(Bounds calc_bounds, double endtime,
 
     std::cout << "dx : " << dx_ << std::endl;
     std::cout << "dt : " << dt_ << std::endl;
-
-    primitives    = Eigen::VectorXd::Zero(N_EQ);
-    conservatives = Eigen::VectorXd::Zero(N_EQ);
 }
 
 ShockTubeSolver::~ShockTubeSolver() {}
@@ -70,6 +67,18 @@ Eigen::VectorXd ShockTubeSolver::PrimToCons(Eigen::VectorXd prim)
     cons(2) = prim(0) * H - prim(2);  // rho * E = rho * H - p
 
     return cons;
+}
+Eigen::VectorXd ShockTubeSolver::ConsToPrim(Eigen::VectorXd cons)
+{
+    Eigen::VectorXd prim(3);
+    prim(0)      = cons(0);  // rho
+    double r_rho = 1.0 / cons(0);
+    prim(1)      = r_rho * cons(1);  // u
+    prim(2)      = (GAMMA - 1) *
+              (cons(2) - 0.5 * prim(0) * prim(1) *
+                             prim(1));  // p = (gamma - 1) * (E - 1/2 rho u^2)
+
+    return prim;
 }
 
 Eigen::VectorXd ShockTubeSolver::Roe(Eigen::VectorXd primL,
@@ -182,34 +191,55 @@ void ShockTubeSolver::Solve()
 {
     std::cout << "\nStart solving flow..." << std::endl;
 
-    // for (int tstep = 0; tstep < n_timestep_; ++tstep)
-    // {
-    //     Vector U_new(U);
-    //     for (int i = 0; i < n_cells_; ++i)
-    //     {
-    //         if (i == 0 || i == n_cells_)
-    //             U_new[i] = U[i];
-    //         else
-    //             U_new[i] = 0.5 * (U[i + 1] + U[i - 1]) -
-    //                        0.5 * CFL_ * (U[i + 1] - U[i - 1]);
-    //     }
+    // Initialize Flow Convervatives
+    flowConservatives.resize(n_cells_);
+    for (int i = 0; i < n_cells_; ++i)
+    {
+        flowConservatives[i] = PrimToCons(flowVars[i]);
+    }
 
-    //     // write file
-    //     bool isOutputDir = std::filesystem::exists("./flow_output");
-    //     if (!isOutputDir)
-    //         std::filesystem::create_directory("./flow_output");
-    //     else
-    //     {
-    //         std::string ofile_flow;
-    //         std::stringstream ss;
-    //         ss << "flow_" << std::setfill('0') << std::setw(4) << std::right
-    //            << std::to_string(tstep) << ".dat";
-    //         ss >> ofile_flow;
-    //         WriteFlowFile("./flow_output/" + ofile_flow);
-    //     }
-    //     // upadate flowfield
-    //     U = U_new;
-    // }
+    // Start timestep calculations
+    for (int tstep = 0; tstep < n_timestep_; ++tstep)
+    {
+        std::vector<Eigen::VectorXd> flowConservatives_new(flowConservatives);
+        for (int i = 0; i < n_cells_; ++i)
+        {
+            // BCs.
+            if (i == 0 || i == n_cells_)
+            {
+                flowConservatives_new[i] = flowConservatives[i];
+            }
+            else
+            {
+                Eigen::VectorXd E_right(N_EQ);  // E_j+1/2
+                Eigen::VectorXd E_left(N_EQ);   // E_j-1/2
+
+                E_right = Roe(ConsToPrim(flowConservatives[i]),
+                              ConsToPrim(flowConservatives[i + 1]));
+                E_left  = Roe(ConsToPrim(flowConservatives[i - 1]),
+                             ConsToPrim(flowConservatives[i]));
+
+                flowConservatives_new[i] =
+                    flowConservatives[i] - dt_ / dx_ * (E_right - E_left);
+            }
+        }
+
+        //     // write file
+        //     bool isOutputDir = std::filesystem::exists("./flow_output");
+        //     if (!isOutputDir)
+        //         std::filesystem::create_directory("./flow_output");
+        //     else
+        //     {
+        //         std::string ofile_flow;
+        //         std::stringstream ss;
+        //         ss << "flow_" << std::setfill('0') << std::setw(4) << std::right
+        //            << std::to_string(tstep) << ".dat";
+        //         ss >> ofile_flow;
+        //         WriteFlowFile("./flow_output/" + ofile_flow);
+        //     }
+        //     // upadate flowfield
+        //     U = U_new;
+    }
 
     std::cout << "Finish solving flow!" << std::endl;
 }

@@ -23,11 +23,12 @@ public:
 
     std::vector<double> cells;
     std::vector<Eigen::VectorXd> flowVars;
-    Eigen::VectorXd primitives;
-    Eigen::VectorXd conservatives;
+    std::vector<Eigen::VectorXd> flowConservatives;
+
     Eigen::VectorXd PrimToCons(Eigen::VectorXd prim);
     Eigen::VectorXd ConsToPrim(Eigen::VectorXd cons);
 
+    // Euler flux
     Eigen::VectorXd Roe(Eigen::VectorXd primL, Eigen::VectorXd primR);
     Eigen::VectorXd vanLeer(Eigen::VectorXd primL, Eigen::VectorXd primR);
 
