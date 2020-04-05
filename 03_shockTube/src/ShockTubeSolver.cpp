@@ -254,7 +254,7 @@ int main()
 {
     /*--- Setting up Configurations ---*/
     Bounds calc_bounds_ = {0.0, 1.0};
-    double endtime      = 0.25;
+    double endtime      = 0.2;
     double dt           = 1e-4;
     int n_cells         = 100;
 
