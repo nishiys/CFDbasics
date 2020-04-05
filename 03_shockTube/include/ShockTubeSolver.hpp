@@ -16,8 +16,12 @@ public:
                     int n_cell);
     ~ShockTubeSolver();
 
+    void SetGrid();
+    void SetFlowField(double wall_position, double rhoL, double pL, double rhoR,
+                      double pR);
     void Solve();
 
+    std::vector<double> cells;
     std::vector<Eigen::VectorXd> flowVars;
     Eigen::VectorXd primitives;
     Eigen::VectorXd conservatives;

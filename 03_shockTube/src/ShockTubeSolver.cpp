@@ -25,6 +25,41 @@ ShockTubeSolver::ShockTubeSolver(Bounds calc_bounds, double endtime,
 
 ShockTubeSolver::~ShockTubeSolver() {}
 
+void ShockTubeSolver::SetGrid()
+{
+    cells.resize(n_cells_, 0);
+    for (int i = 0; i < n_cells_; ++i)
+    {
+        cells[i] = i * dx_;
+    }
+}
+
+void ShockTubeSolver::SetFlowField(double wall_position, double rhoL, double pL,
+                                   double rhoR, double pR)
+{
+    flowVars.resize(n_cells_);
+
+    for (int i = 0; i < n_cells_; ++i)
+    {
+        if (cells[i] <= wall_position)
+        {
+            Eigen::VectorXd prim(3);
+            prim(0)     = rhoL;
+            prim(1)     = 0.0;
+            prim(2)     = pL;
+            flowVars[i] = prim;
+        }
+        else
+        {
+            Eigen::VectorXd prim(3);
+            prim(0)     = rhoR;
+            prim(1)     = 0.0;
+            prim(2)     = pR;
+            flowVars[i] = prim;
+        }
+    }
+}
+
 Eigen::VectorXd ShockTubeSolver::PrimToCons(Eigen::VectorXd prim)
 {
     Eigen::VectorXd cons(3);
@@ -189,8 +224,15 @@ int main()
 
     /*--- Configure ---*/
     ShockTubeSolver flow(calc_bounds_, endtime, n_timestep, n_cells);
-
+    flow.SetGrid();
     /*--- Initial Conditions ---*/
+    double wall_position = 0.5;
+    double rhoL          = 1.0;
+    double pL            = 1.0;
+    double rhoR          = 0.125;
+    double pR            = 0.1;
+    flow.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    std::cout << flow.flowVars[11](0) << std::endl;
 
     /*--- Solve flow ---*/
     flow.Solve();
