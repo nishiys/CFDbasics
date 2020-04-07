@@ -5,11 +5,12 @@ import Sod_ShockTube
 
 
 class Flowfield:
-    def __init__(self):
+    def __init__(self, schemename):
         self.x_array = np.empty(0)
         self.rho_array = np.empty(0)
         self.u_array = np.empty(0)
         self.p_array = np.empty(0)
+        self.scheme = schemename
 
     def getFlowField(self, filename):
         with open(filename, 'r') as file:
@@ -37,7 +38,8 @@ class Flowfield:
                 self.p_array[i] = p
                 i += 1
 
-    def plotSolution(self):
+    def plotSolution(self, filename):
+
         fig = plt.figure(figsize=(8, 12))
         # plt.subplots_adjust(hspace=0.3)
 
@@ -54,7 +56,7 @@ class Flowfield:
         p_fig.set_xlabel(r'$x [m]$')
         p_fig.set_ylabel(r'$p$')
 
-        plt.savefig("flowData.png")
+        plt.savefig(filename)
         plt.show()
 
     def plotSolutionWithExactSol(self, exactSol: Sod_ShockTube.SodExact):
@@ -84,12 +86,59 @@ class Flowfield:
         plt.show()
 
 
+def plotFlowData(flowfield_list: list,
+                 exactSol: Sod_ShockTube.SodExact):
+    rho_fig = plt.figure(1)
+    ax_rho = rho_fig.add_subplot(111)
+    u_fig = plt.figure(2)
+    ax_u = u_fig.add_subplot(111)
+    p_fig = plt.figure(3)
+    ax_p = p_fig.add_subplot(111)
+
+    n = len(flowfield_list)
+    for i in range(0, n):
+        ax_rho.plot(flowfield_list[i].x_array, flowfield_list[i].rho_array,
+                    label=flowfield_list[i].scheme)
+        ax_u.plot(flowfield_list[i].x_array, flowfield_list[i].u_array,
+                  label=flowfield_list[i].scheme)
+        ax_p.plot(flowfield_list[i].x_array, flowfield_list[i].p_array,
+                  label=flowfield_list[i].scheme)
+
+    ax_rho.plot(exactSol.cells,
+                exactSol.solution[0, :], label="Exact Solution")
+    ax_u.plot(exactSol.cells, exactSol.solution[1, :], label="Exact Solution")
+    ax_p.plot(exactSol.cells, exactSol.solution[2, :], label="Exact Solution")
+
+    ax_rho.set_ylabel(r'$\rho$')
+    ax_rho.set_xlabel(r'$x [m]$')
+    ax_u.set_ylabel(r'$u$')
+    ax_u.set_xlabel(r'$x [m]$')
+    ax_p.set_ylabel(r'$p$')
+    ax_p.set_xlabel(r'$x [m]$')
+
+    rho_fig.legend()
+    u_fig.legend()
+    p_fig.legend()
+
+    plt.show()
+    rho_fig.savefig("rho.png")
+    u_fig.savefig("u.png")
+    p_fig.savefig("p.png")
+
+
 def main():
 
-    flowfield = Flowfield()
-    flowfield.getFlowField("flowData.dat")
+    flowfield_roe = Flowfield("Roe")
+    flowfield_roe.getFlowField("flowData_Roe.dat")
+    # flowfield_roe.plotSolution("flowData_Roe.png")
 
-    flowfield.plotSolution()
+    flowfield_vanLeer = Flowfield("van Leer")
+    flowfield_vanLeer.getFlowField("flowData_vanLeer.dat")
+    # flowfield_vanLeer.plotSolution("flowData_vanLeer.png")
+
+    flowfield_list = []
+    flowfield_list.append(flowfield_roe)
+    flowfield_list.append(flowfield_vanLeer)
 
     # --- Exact Solution --- #
     # Initial conditions
@@ -118,7 +167,7 @@ def main():
     sod.Solve()
 
     # Plot solution
-    flowfield.plotSolutionWithExactSol(sod)
+    plotFlowData(flowfield_list, sod)
 
 
 if __name__ == "__main__":

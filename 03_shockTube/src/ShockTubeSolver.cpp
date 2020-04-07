@@ -17,6 +17,7 @@ ShockTubeSolver::ShockTubeSolver(Bounds calc_bounds, double endtime, double dt,
     dx_         = (calc_bounds_[1] - calc_bounds_[0]) / n_cells_;
     n_timestep_ = static_cast<int>(endtime / dt_);
 
+    std::cout << "[Configurations]: " << std::endl;
     std::cout << "dx : " << dx_ << std::endl;
     std::cout << "dt : " << dt_ << std::endl;
 }
@@ -227,9 +228,9 @@ Eigen::Vector3d ShockTubeSolver::vanLeer(Eigen::Vector3d primL,
         // Negative Flux
         double Mn       = -0.25 * (MR - 1) * (MR - 1);
         double MRG1     = -1 + 0.5 * (GAMMA - 1) * MR;
-        PositiveFlux(0) = rhoR * aR * Mn;
-        PositiveFlux(1) = Mn * (2.0 * rhoR * aR * aR / GAMMA) * MRG1;
-        PositiveFlux(2) = Mn *
+        NegativeFlux(0) = rhoR * aR * Mn;
+        NegativeFlux(1) = Mn * (2.0 * rhoR * aR * aR / GAMMA) * MRG1;
+        NegativeFlux(2) = Mn *
                           (2.0 * rhoR * aR * aR * aR / (GAMMA * GAMMA - 1)) *
                           (MRG1 * MRG1);
     }
@@ -261,6 +262,8 @@ void ShockTubeSolver::WriteFlowFile(std::string filename)
 void ShockTubeSolver::Solve()
 {
     std::cout << "\nStart solving flow..." << std::endl;
+    std::cout << "Convective flux scheme: " << convectiveflux_scheme_
+              << std::endl;
 
     // Initialize Flow Convervatives
     flowConservatives.resize(n_cells_);
@@ -317,7 +320,7 @@ void ShockTubeSolver::Solve()
         flowConservatives = flowConservatives_new;
     }
 
-    std::cout << "Finish solving flow!" << std::endl;
+    std::cout << "Finish solving flow!\n" << std::endl;
 }
 
 int main()
