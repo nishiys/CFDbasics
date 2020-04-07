@@ -1,3 +1,0 @@
-/Users/ysnishi/programs/CFDbasics/02_inviscidBurgersSolver/build/CMakeFiles/rebuild_cache.dir
-/Users/ysnishi/programs/CFDbasics/02_inviscidBurgersSolver/build/CMakeFiles/edit_cache.dir
-/Users/ysnishi/programs/CFDbasics/02_inviscidBurgersSolver/build/CMakeFiles/inviscidBurgersSolver.dir
