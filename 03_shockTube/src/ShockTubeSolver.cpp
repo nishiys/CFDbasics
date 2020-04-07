@@ -171,7 +171,70 @@ Eigen::Vector3d ShockTubeSolver::Roe(Eigen::Vector3d primL,
 Eigen::Vector3d ShockTubeSolver::vanLeer(Eigen::Vector3d primL,
                                          Eigen::Vector3d primR)
 {
-    //TODO
+    /* --- Set Variables --- */
+    double rhoL = primL(0);
+    double uL   = primL(1);
+    double pL   = primL(2);
+    double aL   = std::sqrt(GAMMA * pL / rhoL);  // sound speed
+    double HL =
+        aL * aL / (GAMMA - 1) + 0.5 * uL * uL;  // Total enthalpy per unit mass
+    double ML = uL / aL;                        // Mach No.
+
+    double rhoR = primR(0);
+    double uR   = primR(1);
+    double pR   = primR(2);
+    double aR   = std::sqrt(GAMMA * pR / rhoR);
+    double HR   = aR * aR / (GAMMA - 1) + 0.5 * uR * uR;
+    double MR   = uR / aR;
+
+    /* --- Calculate Positive & Negative Fluxes --- */
+    Eigen::Vector3d PositiveFlux(3);
+    Eigen::Vector3d NegativeFlux(3);
+
+    if (ML <= -1)
+    {
+        Eigen::Vector3d fluxR(3);
+        fluxR(0) = rhoR * uR;
+        fluxR(1) = pR + rhoR * uR * uR;
+        fluxR(2) = (rhoR * HR) * uR;
+
+        PositiveFlux = Eigen::VectorXd::Zero(3);
+        NegativeFlux = fluxR;
+    }
+
+    else if (ML >= 1)
+    {
+        Eigen::Vector3d fluxL(3);
+        fluxL(0) = rhoL * uL;
+        fluxL(1) = pL + rhoL * uL * uL;
+        fluxL(2) =
+            (rhoL * HL) * uL;  // rho * H : Total enthalpy per unit volume
+
+        PositiveFlux = fluxL;
+        NegativeFlux = Eigen::VectorXd::Zero(3);
+    }
+
+    else  // -1 < ML < 1
+    {
+        // Positive Flux
+        double Mp       = 0.25 * (ML + 1) * (ML + 1);
+        double MLG1     = 1 + 0.5 * (GAMMA - 1) * ML;
+        PositiveFlux(0) = rhoL * aL * Mp;
+        PositiveFlux(1) = Mp * (2.0 * rhoL * aL * aL / GAMMA) * MLG1;
+        PositiveFlux(2) = Mp *
+                          (2.0 * rhoL * aL * aL * aL / (GAMMA * GAMMA - 1)) *
+                          (MLG1 * MLG1);
+        // Negative Flux
+        double Mn       = -0.25 * (MR - 1) * (MR - 1);
+        double MRG1     = -1 + 0.5 * (GAMMA - 1) * MR;
+        PositiveFlux(0) = rhoR * aR * Mn;
+        PositiveFlux(1) = Mn * (2.0 * rhoR * aR * aR / GAMMA) * MRG1;
+        PositiveFlux(2) = Mn *
+                          (2.0 * rhoR * aR * aR * aR / (GAMMA * GAMMA - 1)) *
+                          (MRG1 * MRG1);
+    }
+
+    return (PositiveFlux + NegativeFlux);  // (F_j+1/2)^+ + (F_j+1/2)^-
 }
 
 void ShockTubeSolver::WriteFlowFile(std::string filename)
@@ -232,6 +295,10 @@ void ShockTubeSolver::Solve()
                 }
                 else if (convectiveflux_scheme_ == "vanLeer")
                 {
+                    F_right = vanLeer(ConsToPrim(flowConservatives[i]),
+                                      ConsToPrim(flowConservatives[i + 1]));
+                    F_left  = vanLeer(ConsToPrim(flowConservatives[i - 1]),
+                                     ConsToPrim(flowConservatives[i]));
                 }
                 else
                 {
