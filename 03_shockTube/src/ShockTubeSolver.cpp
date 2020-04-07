@@ -7,8 +7,12 @@
 #include <sstream>
 
 ShockTubeSolver::ShockTubeSolver(Bounds calc_bounds, double endtime, double dt,
-                                 int n_cells)
-    : calc_bounds_(calc_bounds), endtime_(endtime), dt_(dt), n_cells_(n_cells)
+                                 int n_cells, std::string convectiveflux_scheme)
+    : calc_bounds_(calc_bounds),
+      endtime_(endtime),
+      dt_(dt),
+      n_cells_(n_cells),
+      convectiveflux_scheme_(convectiveflux_scheme)
 {
     dx_         = (calc_bounds_[1] - calc_bounds_[0]) / n_cells_;
     n_timestep_ = static_cast<int>(endtime / dt_);
@@ -167,6 +171,7 @@ Eigen::Vector3d ShockTubeSolver::Roe(Eigen::Vector3d primL,
 Eigen::Vector3d ShockTubeSolver::vanLeer(Eigen::Vector3d primL,
                                          Eigen::Vector3d primR)
 {
+    //TODO
 }
 
 void ShockTubeSolver::WriteFlowFile(std::string filename)
@@ -204,20 +209,6 @@ void ShockTubeSolver::Solve()
     // Start timestep calculations
     for (int tstep = 0; tstep < n_timestep_; ++tstep)
     {
-        // // write file
-        // bool isOutputDir = std::filesystem::exists("./flow_output");
-        // if (!isOutputDir)
-        //     std::filesystem::create_directory("./flow_output");
-        // else
-        // {
-        //     std::string ofile_flow;
-        //     std::stringstream ss;
-        //     ss << "flow_" << std::setfill('0') << std::setw(4) << std::right
-        //        << std::to_string(tstep) << ".dat";
-        //     ss >> ofile_flow;
-        //     WriteFlowFile("./flow_output/" + ofile_flow);
-        // }
-
         std::vector<Eigen::Vector3d> flowConservatives_new(flowConservatives);
         for (int i = 0; i < n_cells_; ++i)
         {
@@ -226,20 +217,32 @@ void ShockTubeSolver::Solve()
             {
                 flowConservatives_new[i] = flowConservatives[i];
             }
+            // Other than Boundaries
             else
             {
-                Eigen::Vector3d E_right(3);  // E_j+1/2
-                Eigen::Vector3d E_left(3);   // E_j-1/2
+                Eigen::Vector3d F_right(3);  // F_j+1/2
+                Eigen::Vector3d F_left(3);   // F_j-1/2
 
-                E_right = Roe(ConsToPrim(flowConservatives[i]),
-                              ConsToPrim(flowConservatives[i + 1]));
-                E_left  = Roe(ConsToPrim(flowConservatives[i - 1]),
-                             ConsToPrim(flowConservatives[i]));
+                if (convectiveflux_scheme_ == "Roe")
+                {
+                    F_right = Roe(ConsToPrim(flowConservatives[i]),
+                                  ConsToPrim(flowConservatives[i + 1]));
+                    F_left  = Roe(ConsToPrim(flowConservatives[i - 1]),
+                                 ConsToPrim(flowConservatives[i]));
+                }
+                else if (convectiveflux_scheme_ == "vanLeer")
+                {
+                }
+                else
+                {
+                    std::cerr << convectiveflux_scheme_
+                              << " scheme is not supported..." << std::endl;
+                    std::exit(1);
+                }
 
                 flowConservatives_new[i] =
-                    flowConservatives[i] - dt_ / dx_ * (E_right - E_left);
+                    flowConservatives[i] - dt_ / dx_ * (F_right - F_left);
                 flowVars[i] = ConsToPrim(flowConservatives_new[i]);
-                // std::cout << flowConservatives_new[i] << std::endl;
             }
         }
 
@@ -257,20 +260,31 @@ int main()
     double endtime      = 0.2;
     double dt           = 1e-4;
     int n_cells         = 100;
-
-    /*--- Configure ---*/
-    ShockTubeSolver flow(calc_bounds_, endtime, dt, n_cells);
-    flow.SetGrid();
+    std::string convectiveflux_scheme;
     /*--- Initial Conditions ---*/
     double wall_position = 0.5;
     double rhoL          = 1.0;
     double pL            = 1.0;
     double rhoR          = 0.125;
     double pR            = 0.1;
-    flow.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
 
-    /*--- Solve flow ---*/
-    flow.Solve();
-    flow.WriteFlowFile("flowData.dat");
+    // Roe
+    convectiveflux_scheme = "Roe";
+    ShockTubeSolver flow_roe(calc_bounds_, endtime, dt, n_cells,
+                             convectiveflux_scheme);
+    flow_roe.SetGrid();
+    flow_roe.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_roe.Solve();
+    flow_roe.WriteFlowFile("flowData_Roe.dat");
+
+    // van Leer
+    convectiveflux_scheme = "vanLeer";
+    ShockTubeSolver flow_vanLeer(calc_bounds_, endtime, dt, n_cells,
+                                 convectiveflux_scheme);
+    flow_vanLeer.SetGrid();
+    flow_vanLeer.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_vanLeer.Solve();
+    flow_vanLeer.WriteFlowFile("flowData_vanLeer.dat");
+
     return 0;
 }

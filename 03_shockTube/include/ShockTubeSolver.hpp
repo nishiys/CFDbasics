@@ -11,7 +11,8 @@ using Bounds = std::array<double, 2>;
 class ShockTubeSolver
 {
 public:
-    ShockTubeSolver(Bounds calc_bounds, double endtime, double dt, int n_cell);
+    ShockTubeSolver(Bounds calc_bounds, double endtime, double dt, int n_cell,
+                    std::string convectiveflux_scheme);
     ~ShockTubeSolver();
 
     void SetGrid();
@@ -44,4 +45,6 @@ private:
     double CFL_;
 
     const double GAMMA = 1.40;
+
+    std::string convectiveflux_scheme_;
 };
