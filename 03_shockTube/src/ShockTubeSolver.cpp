@@ -238,6 +238,88 @@ Eigen::Vector3d ShockTubeSolver::vanLeer(Eigen::Vector3d primL,
     return (PositiveFlux + NegativeFlux);  // (F_j+1/2)^+ + (F_j+1/2)^-
 }
 
+Eigen::Vector3d ShockTubeSolver::AUSM(Eigen::Vector3d primL,
+                                      Eigen::Vector3d primR)
+{
+    /* --- Set Variables --- */
+    double rhoL = primL(0);
+    double uL   = primL(1);
+    double pL   = primL(2);
+    double aL   = std::sqrt(GAMMA * pL / rhoL);  // sound speed
+    double HL =
+        aL * aL / (GAMMA - 1) + 0.5 * uL * uL;  // Total enthalpy per unit mass
+    double ML = uL / aL;                        // Mach No.
+
+    double rhoR = primR(0);
+    double uR   = primR(1);
+    double pR   = primR(2);
+    double aR   = std::sqrt(GAMMA * pR / rhoR);
+    double HR   = aR * aR / (GAMMA - 1) + 0.5 * uR * uR;
+    double MR   = uR / aR;
+
+    /* --- Calculate M_1/2 --- */
+    double MLp;  // (ML)^+
+    if (std::abs(ML) > 1)
+    {
+        MLp = 0.5 * (ML + std::abs(ML));
+    }
+    else
+    {
+        MLp = 0.25 * (ML + 1) * (ML + 1);
+    }
+    double MRm;  // (MR)^-
+    if (std::abs(MR) > 1)
+    {
+        MRm = 0.5 * (MR - std::abs(MR));
+    }
+    else
+    {
+        MRm = -0.25 * (MR - 1) * (MR - 1);
+    }
+    double M_half = MLp + MRm;
+
+    /* --- Calculate Flux without pressure (F_1/2)^c --- */
+    Eigen::Vector3d Fc;
+    if (M_half >= 0)
+    {
+        Fc(0) = M_half * (rhoL * aL);
+        Fc(1) = M_half * (rhoL * aL * uL);
+        Fc(2) = M_half * (rhoL * aL * HL);
+    }
+    else
+    {
+        Fc(0) = M_half * (rhoR * aR);
+        Fc(1) = M_half * (rhoR * aR * uR);
+        Fc(2) = M_half * (rhoR * aR * HR);
+    }
+    /* --- Calculate p_half --- */
+    double pLp;
+    if (std::abs(ML) > 1)
+    {
+        pLp = 0.5 * pL * (ML + std::abs(ML)) / ML;
+    }
+    else
+    {
+        pLp = 0.5 * pL * (1 + ML);
+    }
+
+    double pRm;
+    if (std::abs(MR) > 1)
+    {
+        pRm = 0.5 * pR * (MR - std::abs(MR)) / MR;
+    }
+    else
+    {
+        pRm = 0.5 * pR * (1 - MR);
+    }
+
+    double p_half = pLp + pRm;
+
+    /* --- Return the resulting flux --- */
+    Fc(1) = Fc(1) + p_half;
+    return Fc;
+}
+
 void ShockTubeSolver::WriteFlowFile(std::string filename)
 {
     std::ofstream ofile(filename);
@@ -303,6 +385,13 @@ void ShockTubeSolver::Solve()
                     F_left  = vanLeer(ConsToPrim(flowConservatives[i - 1]),
                                      ConsToPrim(flowConservatives[i]));
                 }
+                else if (convectiveflux_scheme_ == "AUSM")
+                {
+                    F_right = AUSM(ConsToPrim(flowConservatives[i]),
+                                   ConsToPrim(flowConservatives[i + 1]));
+                    F_left  = AUSM(ConsToPrim(flowConservatives[i - 1]),
+                                  ConsToPrim(flowConservatives[i]));
+                }
                 else
                 {
                     std::cerr << convectiveflux_scheme_
@@ -355,6 +444,15 @@ int main()
     flow_vanLeer.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
     flow_vanLeer.Solve();
     flow_vanLeer.WriteFlowFile("flowData_vanLeer.dat");
+
+    // AUSM
+    convectiveflux_scheme = "AUSM";
+    ShockTubeSolver flow_AUSM(calc_bounds_, endtime, dt, n_cells,
+                              convectiveflux_scheme);
+    flow_AUSM.SetGrid();
+    flow_AUSM.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_AUSM.Solve();
+    flow_AUSM.WriteFlowFile("flowData_AUSM.dat");
 
     return 0;
 }

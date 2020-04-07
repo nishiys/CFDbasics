@@ -31,6 +31,7 @@ public:
     // Euler flux
     Eigen::Vector3d Roe(Eigen::Vector3d primL, Eigen::Vector3d primR);
     Eigen::Vector3d vanLeer(Eigen::Vector3d primL, Eigen::Vector3d primR);
+    Eigen::Vector3d AUSM(Eigen::Vector3d primL, Eigen::Vector3d primR);
 
     inline int Get_n_cells() const { return n_cells_; };
     inline double Get_dx() const { return dx_; };
