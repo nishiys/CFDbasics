@@ -136,9 +136,14 @@ def main():
     flowfield_vanLeer.getFlowField("flowData_vanLeer.dat")
     # flowfield_vanLeer.plotSolution("flowData_vanLeer.png")
 
+    flowfield_AUSM = Flowfield("AUSM")
+    flowfield_AUSM.getFlowField("flowData_AUSM.dat")
+    # flowfield_vanLeer.plotSolution("flowData_vanLeer.png")
+
     flowfield_list = []
     flowfield_list.append(flowfield_roe)
     flowfield_list.append(flowfield_vanLeer)
+    flowfield_list.append(flowfield_AUSM)
 
     # --- Exact Solution --- #
     # Initial conditions
