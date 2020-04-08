@@ -4,23 +4,30 @@
 
 ### Flux Differencing Splitting
 
-- Roe (1st oder upwind)
+- Roe
 
 ### Flux Vectoer Splitting
 
-- van Leer (1st oder upwind)
-- AUSM (1st oder upwind)
+- van Leer
+- AUSM
 
-## Next Tasks
+## MUSCL scheme
 
-Bug fixation
+This code has an option to use MUSCL scheme.
 
-- Exact solution of velocity might be wrong?
+## Accuracy in time
 
-increase accurary in space
+2nd order accuracy in time is default.
+The code of 1st order accuracy in time is commented out.
 
-- Add MUSCL scheme with minmod limiter
+## Results
 
-increace accuracy in time
+Results seem to be valid comparing with the following github results.
 
-- Add an option of second order in time
+- [Computational\-Fluid\-Dynamics/31\.Sod Shock Tube at master · xuaoxiqi/Computational\-Fluid\-Dynamics](https://github.com/xuaoxiqi/Computational-Fluid-Dynamics/tree/master/31.Sod%20Shock%20Tube)
+
+van Leer w/ MUSCL has some oscillations in the region between expansion wave (Region 2) and Region 3.
+
+## Bugs
+
+- Exact solution might be wrong.
