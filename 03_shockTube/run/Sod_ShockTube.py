@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import fsolve
+from scipy.optimize import newton
 import matplotlib.pyplot as plt
 
 
@@ -53,7 +54,7 @@ class SodExact:
         rhoR = self.primR[0]
         r_rho4 = 1 / rhoR * (GR4/(Ms**2) + 1/GR1)
         rho4 = 1 / r_rho4
-        u4 = GR4 * (Ms - 1 / Ms)
+        u4 = self.aR * GR4 * (Ms - 1.0 / Ms)
 
         return rho4, u4, p4
 

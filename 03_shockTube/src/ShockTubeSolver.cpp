@@ -6,13 +6,16 @@
 #include <iomanip>
 #include <sstream>
 
+
+
+
+
 ShockTubeSolver::ShockTubeSolver(Bounds calc_bounds, double endtime, double dt,
-                                 int n_cells, std::string convectiveflux_scheme)
+                                 int n_cells)
     : calc_bounds_(calc_bounds),
       endtime_(endtime),
       dt_(dt),
-      n_cells_(n_cells),
-      convectiveflux_scheme_(convectiveflux_scheme)
+      n_cells_(n_cells)
 {
     dx_         = (calc_bounds_[1] - calc_bounds_[0]) / n_cells_;
     n_timestep_ = static_cast<int>(endtime / dt_);
@@ -59,6 +62,13 @@ void ShockTubeSolver::SetFlowField(double wall_position, double rhoL, double pL,
     }
 }
 
+void ShockTubeSolver::SetSchemes(std::string convectiveflux_scheme, bool MUSCL, int k)
+{
+    convectiveflux_scheme_ = convectiveflux_scheme;
+    MUSCL_ = MUSCL;
+    k_ = k;
+}
+
 Eigen::Vector3d ShockTubeSolver::PrimToCons(Eigen::Vector3d prim)
 {
     Eigen::Vector3d cons(3);
@@ -81,6 +91,20 @@ Eigen::Vector3d ShockTubeSolver::ConsToPrim(Eigen::Vector3d cons)
                              prim(1));  // p = (gamma - 1) * (E - 1/2 rho u^2)
 
     return prim;
+}
+
+
+double ShockTubeSolver::minmod(double a, double b)
+{
+    if (a*b <= 0)
+        return 0.0;
+    else
+    {
+        if (std::abs(a) < std::abs(b))
+            return a;
+        else
+            return b;
+    }
 }
 
 Eigen::Vector3d ShockTubeSolver::Roe(Eigen::Vector3d primL,
@@ -361,7 +385,7 @@ void ShockTubeSolver::Solve()
         for (int i = 0; i < n_cells_; ++i)
         {
             // BCs.
-            if (i == 0 || i == n_cells_ - 1)
+            if (i == 0 || i == 1 || i == n_cells_ - 2 || i == n_cells_ - 1)
             {
                 flowConservatives_new[i] = flowConservatives[i];
             }
@@ -371,26 +395,64 @@ void ShockTubeSolver::Solve()
                 Eigen::Vector3d F_right(3);  // F_j+1/2
                 Eigen::Vector3d F_left(3);   // F_j-1/2
 
+                /* --- MUSCL scheme --- */
+                Eigen::Vector3d QL_right(3);
+                Eigen::Vector3d QR_right(3);
+                Eigen::Vector3d QL_left(3);
+                Eigen::Vector3d QR_left(3);
+
+                if (MUSCL_ == true)
+                {
+                    // with minmod
+                    double b = (3 - k_)/(1 - k_);
+                    Eigen::Vector3d Delta_p_right = flowConservatives[i+1] - flowConservatives[i];
+                    Eigen::Vector3d Delta_m_right = flowConservatives[i] - flowConservatives[i-1];
+                    Eigen::Vector3d Delta_p_left = flowConservatives[i] - flowConservatives[i-1];
+                    Eigen::Vector3d Delta_m_left = flowConservatives[i-1] - flowConservatives[i-2];
+
+                    for (int i = 0; i < 3; ++i)
+                    {
+                        Delta_p_right(i) = minmod(Delta_p_right(i), b * Delta_m_right(i));
+                        Delta_m_right(i) = minmod(Delta_m_right(i), b * Delta_p_right(i));
+                        Delta_p_left(i) = minmod(Delta_p_left(i), b * Delta_m_left(i));
+                        Delta_m_left(i) = minmod(Delta_m_left(i), b * Delta_p_left(i));
+                    }
+
+                    QL_right = flowConservatives[i] + 0.25 * ((1 - k_) * Delta_m_right + (1 + k_) * Delta_p_right);
+                    QR_right = flowConservatives[i+1] - 0.25 * ((1 - k_) * Delta_p_right + (1 + k_) * Delta_m_right);
+                    QL_left = flowConservatives[i-1] + 0.25 * ((1 - k_) * Delta_m_left + (1 + k_) * Delta_p_left);
+                    QR_left = flowConservatives[i] - 0.25 * ((1 - k_) * Delta_p_left + (1 + k_) * Delta_m_left);
+                }
+                else
+                {
+                    // 1st order upwind
+                    QL_right = flowConservatives[i];
+                    QR_right =flowConservatives[i+1];
+                    QL_left = flowConservatives[i-1];
+                    QR_left = flowConservatives[i];
+                }
+
+                /* --- Convective flux evaluation --- */
                 if (convectiveflux_scheme_ == "Roe")
                 {
-                    F_right = Roe(ConsToPrim(flowConservatives[i]),
-                                  ConsToPrim(flowConservatives[i + 1]));
-                    F_left  = Roe(ConsToPrim(flowConservatives[i - 1]),
-                                 ConsToPrim(flowConservatives[i]));
+                    F_right = Roe(ConsToPrim(QL_right),
+                                  ConsToPrim(QR_right));
+                    F_left  = Roe(ConsToPrim(QL_left),
+                                 ConsToPrim(QR_left));
                 }
                 else if (convectiveflux_scheme_ == "vanLeer")
                 {
-                    F_right = vanLeer(ConsToPrim(flowConservatives[i]),
-                                      ConsToPrim(flowConservatives[i + 1]));
-                    F_left  = vanLeer(ConsToPrim(flowConservatives[i - 1]),
-                                     ConsToPrim(flowConservatives[i]));
+                    F_right = vanLeer(ConsToPrim(QL_right),
+                                      ConsToPrim(QR_right));
+                    F_left  = vanLeer(ConsToPrim(QL_left),
+                                     ConsToPrim(QR_left));
                 }
                 else if (convectiveflux_scheme_ == "AUSM")
                 {
-                    F_right = AUSM(ConsToPrim(flowConservatives[i]),
-                                   ConsToPrim(flowConservatives[i + 1]));
-                    F_left  = AUSM(ConsToPrim(flowConservatives[i - 1]),
-                                  ConsToPrim(flowConservatives[i]));
+                    F_right = AUSM(ConsToPrim(QL_right),
+                                   ConsToPrim(QR_right));
+                    F_left  = AUSM(ConsToPrim(QL_left),
+                                  ConsToPrim(QR_left));
                 }
                 else
                 {
@@ -418,8 +480,10 @@ int main()
     Bounds calc_bounds_ = {0.0, 1.0};
     double endtime      = 0.2;
     double dt           = 1e-4;
-    int n_cells         = 100;
+    int n_cells         = 201;
     std::string convectiveflux_scheme;
+    bool MUSCL;
+    double kappa;
     /*--- Initial Conditions ---*/
     double wall_position = 0.5;
     double rhoL          = 1.0;
@@ -429,30 +493,69 @@ int main()
 
     // Roe
     convectiveflux_scheme = "Roe";
-    ShockTubeSolver flow_roe(calc_bounds_, endtime, dt, n_cells,
-                             convectiveflux_scheme);
+    MUSCL = false;
+    kappa = 0;
+    ShockTubeSolver flow_roe(calc_bounds_, endtime, dt, n_cells);
     flow_roe.SetGrid();
     flow_roe.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_roe.SetSchemes(convectiveflux_scheme, MUSCL, kappa);
     flow_roe.Solve();
     flow_roe.WriteFlowFile("flowData_Roe.dat");
 
     // van Leer
     convectiveflux_scheme = "vanLeer";
-    ShockTubeSolver flow_vanLeer(calc_bounds_, endtime, dt, n_cells,
-                                 convectiveflux_scheme);
+    MUSCL = false;
+    kappa = 0;
+    ShockTubeSolver flow_vanLeer(calc_bounds_, endtime, dt, n_cells);
     flow_vanLeer.SetGrid();
     flow_vanLeer.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_vanLeer.SetSchemes(convectiveflux_scheme, MUSCL, kappa);
     flow_vanLeer.Solve();
     flow_vanLeer.WriteFlowFile("flowData_vanLeer.dat");
 
     // AUSM
     convectiveflux_scheme = "AUSM";
-    ShockTubeSolver flow_AUSM(calc_bounds_, endtime, dt, n_cells,
-                              convectiveflux_scheme);
+    MUSCL = false;
+    kappa = 0;
+    ShockTubeSolver flow_AUSM(calc_bounds_, endtime, dt, n_cells);
     flow_AUSM.SetGrid();
     flow_AUSM.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_AUSM.SetSchemes(convectiveflux_scheme, MUSCL, kappa);
     flow_AUSM.Solve();
     flow_AUSM.WriteFlowFile("flowData_AUSM.dat");
+
+    // Roe MUSCL
+    convectiveflux_scheme = "Roe";
+    MUSCL = true;
+    kappa = -1;
+    ShockTubeSolver flow_roe_MUSCL(calc_bounds_, endtime, dt, n_cells);
+    flow_roe_MUSCL.SetGrid();
+    flow_roe_MUSCL.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_roe_MUSCL.SetSchemes(convectiveflux_scheme, MUSCL, kappa);
+    flow_roe_MUSCL.Solve();
+    flow_roe_MUSCL.WriteFlowFile("flowData_Roe_MUSCL.dat");
+
+    // van Leer MUSCL
+    convectiveflux_scheme = "vanLeer";
+    MUSCL = true;
+    kappa = -1;
+    ShockTubeSolver flow_vanLeer_MUSCL(calc_bounds_, endtime, dt, n_cells);
+    flow_vanLeer_MUSCL.SetGrid();
+    flow_vanLeer_MUSCL.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_vanLeer_MUSCL.SetSchemes(convectiveflux_scheme, MUSCL, kappa);
+    flow_vanLeer_MUSCL.Solve();
+    flow_vanLeer_MUSCL.WriteFlowFile("flowData_vanLeer_MUSCL.dat");
+
+    // AUSM MUSCL
+    convectiveflux_scheme = "AUSM";
+    MUSCL = true;
+    kappa = -1;
+    ShockTubeSolver flow_AUSM_MUSCL(calc_bounds_, endtime, dt, n_cells);
+    flow_AUSM_MUSCL.SetGrid();
+    flow_AUSM_MUSCL.SetFlowField(wall_position, rhoL, pL, rhoR, pR);
+    flow_AUSM_MUSCL.SetSchemes(convectiveflux_scheme, MUSCL, kappa);
+    flow_AUSM_MUSCL.Solve();
+    flow_AUSM_MUSCL.WriteFlowFile("flowData_AUSM_MUSCL.dat");
 
     return 0;
 }

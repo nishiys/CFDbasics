@@ -13,6 +13,10 @@
 
 ## Next Tasks
 
+Bug fixation
+
+- Exact solution of velocity might be wrong?
+
 increase accurary in space
 
 - Add MUSCL scheme with minmod limiter
