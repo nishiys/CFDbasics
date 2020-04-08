@@ -17,7 +17,7 @@ public:
     void SetGrid();
     void SetFlowField(double wall_position, double rhoL, double pL, double rhoR,
                       double pR);
-    void SetSchemes(std::string convectiveflux_scheme, bool MUSCL, int k);
+    void SetSchemes(std::string convectiveflux_scheme, bool MUSCL, double k);
     void Solve();
     void WriteFlowFile(std::string filename);
 

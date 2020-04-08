@@ -62,11 +62,16 @@ void ShockTubeSolver::SetFlowField(double wall_position, double rhoL, double pL,
     }
 }
 
-void ShockTubeSolver::SetSchemes(std::string convectiveflux_scheme, bool MUSCL, int k)
+void ShockTubeSolver::SetSchemes(std::string convectiveflux_scheme, bool MUSCL, double k)
 {
     convectiveflux_scheme_ = convectiveflux_scheme;
     MUSCL_ = MUSCL;
     k_ = k;
+
+    if (MUSCL_ == true)
+    {
+        std::cout << "MUSCL scheme enabled." << std::endl;
+    }
 }
 
 Eigen::Vector3d ShockTubeSolver::PrimToCons(Eigen::Vector3d prim)
@@ -216,7 +221,7 @@ Eigen::Vector3d ShockTubeSolver::vanLeer(Eigen::Vector3d primL,
     Eigen::Vector3d PositiveFlux(3);
     Eigen::Vector3d NegativeFlux(3);
 
-    if (ML <= -1)
+    if (ML <= -1.0)
     {
         Eigen::Vector3d fluxR(3);
         fluxR(0) = rhoR * uR;
@@ -227,7 +232,7 @@ Eigen::Vector3d ShockTubeSolver::vanLeer(Eigen::Vector3d primL,
         NegativeFlux = fluxR;
     }
 
-    else if (ML >= 1)
+    else if (ML >= 1.0)
     {
         Eigen::Vector3d fluxL(3);
         fluxL(0) = rhoL * uL;
@@ -370,6 +375,8 @@ void ShockTubeSolver::Solve()
     std::cout << "\nStart solving flow..." << std::endl;
     std::cout << "Convective flux scheme: " << convectiveflux_scheme_
               << std::endl;
+    std::cout << "Time accuracy: 2nd order" << std::endl;
+
 
     // Initialize Flow Convervatives
     flowConservatives.resize(n_cells_);
@@ -382,6 +389,7 @@ void ShockTubeSolver::Solve()
     for (int tstep = 0; tstep < n_timestep_; ++tstep)
     {
         std::vector<Eigen::Vector3d> flowConservatives_new(flowConservatives);
+        std::vector<Eigen::Vector3d> flowConservatives_halfstep(flowConservatives);
         for (int i = 0; i < n_cells_; ++i)
         {
             // BCs.
@@ -392,15 +400,49 @@ void ShockTubeSolver::Solve()
             // Other than Boundaries
             else
             {
+                /* --- Scheme of 2nd order accuracy in time is used. --- */
+                // <1st step> Calculate Q^n+1/2 with 1st order accurate fluxes.
+                Eigen::Vector3d QL_right = flowConservatives[i];
+                Eigen::Vector3d QR_right =flowConservatives[i+1];
+                Eigen::Vector3d QL_left = flowConservatives[i-1];
+                Eigen::Vector3d QR_left = flowConservatives[i];
                 Eigen::Vector3d F_right(3);  // F_j+1/2
                 Eigen::Vector3d F_left(3);   // F_j-1/2
 
-                /* --- MUSCL scheme --- */
-                Eigen::Vector3d QL_right(3);
-                Eigen::Vector3d QR_right(3);
-                Eigen::Vector3d QL_left(3);
-                Eigen::Vector3d QR_left(3);
+                /* --- Convective flux evaluation --- */
+                if (convectiveflux_scheme_ == "Roe")
+                {
+                    F_right = Roe(ConsToPrim(QL_right),
+                                  ConsToPrim(QR_right));
+                    F_left  = Roe(ConsToPrim(QL_left),
+                                 ConsToPrim(QR_left));
+                }
+                else if (convectiveflux_scheme_ == "vanLeer")
+                {
+                    F_right = vanLeer(ConsToPrim(QL_right),
+                                      ConsToPrim(QR_right));
+                    F_left  = vanLeer(ConsToPrim(QL_left),
+                                     ConsToPrim(QR_left));
+                }
+                else if (convectiveflux_scheme_ == "AUSM")
+                {
+                    F_right = AUSM(ConsToPrim(QL_right),
+                                   ConsToPrim(QR_right));
+                    F_left  = AUSM(ConsToPrim(QL_left),
+                                  ConsToPrim(QR_left));
+                }
+                else
+                {
+                    std::cerr << convectiveflux_scheme_
+                              << " scheme is not supported..." << std::endl;
+                    std::exit(1);
+                }
+                // Update conservative quantities
+                flowConservatives_halfstep[i] =
+                    flowConservatives[i] - 0.5 * dt_ / dx_ * (F_right - F_left);
 
+                // <2nd step> Calculate Fluxes with Q^n+1/2 we get at the 1st step
+                /* --- MUSCL scheme --- */
                 if (MUSCL_ == true)
                 {
                     // with minmod
@@ -429,10 +471,10 @@ void ShockTubeSolver::Solve()
                         bdR_left(i) = minmod(bdR_left(i), b * fdR_left(i));
                     }
 
-                    QL_right = flowConservatives[i] + 0.25 * ((1 - k_) * bdL_right + (1 + k_) * fdL_right);
-                    QR_right = flowConservatives[i+1] - 0.25 * ((1 - k_) * fdR_right + (1 + k_) * bdR_right);
-                    QL_left = flowConservatives[i-1] + 0.25 * ((1 - k_) * bdL_left + (1 + k_) * fdL_left);
-                    QR_left = flowConservatives[i] - 0.25 * ((1 - k_) * fdR_left + (1 + k_) * bdR_left);
+                    QL_right = flowConservatives_halfstep[i] + 0.25 * ((1 - k_) * bdL_right + (1 + k_) * fdL_right);
+                    QR_right = flowConservatives_halfstep[i+1] - 0.25 * ((1 - k_) * fdR_right + (1 + k_) * bdR_right);
+                    QL_left = flowConservatives_halfstep[i-1] + 0.25 * ((1 - k_) * bdL_left + (1 + k_) * fdL_left);
+                    QR_left = flowConservatives_halfstep[i] - 0.25 * ((1 - k_) * fdR_left + (1 + k_) * bdR_left);
                 }
                 else
                 {
@@ -484,6 +526,131 @@ void ShockTubeSolver::Solve()
 
     std::cout << "Finish solving flow!\n" << std::endl;
 }
+
+
+// void ShockTubeSolver::Solve()
+// {
+//     std::cout << "\nStart solving flow..." << std::endl;
+//     std::cout << "Convective flux scheme: " << convectiveflux_scheme_
+//               << std::endl;
+
+//     // Initialize Flow Convervatives
+//     flowConservatives.resize(n_cells_);
+//     for (int i = 0; i < n_cells_; ++i)
+//     {
+//         flowConservatives[i] = PrimToCons(flowVars[i]);
+//     }
+
+//     // Start timestep calculations
+//     for (int tstep = 0; tstep < n_timestep_; ++tstep)
+//     {
+//         std::vector<Eigen::Vector3d> flowConservatives_new(flowConservatives);
+//         for (int i = 0; i < n_cells_; ++i)
+//         {
+//             // BCs.
+//             if (i == 0 || i == 1 || i == n_cells_ - 2 || i == n_cells_ - 1)
+//             {
+//                 flowConservatives_new[i] = flowConservatives[i];
+//             }
+//             // Other than Boundaries
+//             else
+//             {
+//                 Eigen::Vector3d F_right(3);  // F_j+1/2
+//                 Eigen::Vector3d F_left(3);   // F_j-1/2
+
+//                 /* --- MUSCL scheme --- */
+//                 Eigen::Vector3d QL_right(3);
+//                 Eigen::Vector3d QR_right(3);
+//                 Eigen::Vector3d QL_left(3);
+//                 Eigen::Vector3d QR_left(3);
+
+//                 if (MUSCL_ == true)
+//                 {
+//                     // with minmod
+//                     double b = (3 - k_)/(1 - k_);
+//                     // fd: fowrard difference, bd: backward difference
+//                     Eigen::Vector3d fdL_right = flowConservatives[i+1] - flowConservatives[i];
+//                     Eigen::Vector3d bdL_right = flowConservatives[i] - flowConservatives[i-1];
+//                     Eigen::Vector3d fdR_right = flowConservatives[i+2] - flowConservatives[i+1];
+//                     Eigen::Vector3d bdR_right = flowConservatives[i+1] - flowConservatives[i];
+                    
+//                     Eigen::Vector3d fdL_left = flowConservatives[i] - flowConservatives[i-1];
+//                     Eigen::Vector3d bdL_left = flowConservatives[i-1] - flowConservatives[i-2];
+//                     Eigen::Vector3d fdR_left = flowConservatives[i+1] - flowConservatives[i];
+//                     Eigen::Vector3d bdR_left = flowConservatives[i] - flowConservatives[i-1];
+
+//                     for (int i = 0; i < 3; ++i)
+//                     {
+//                         fdL_right(i) = minmod(fdL_right(i), b * bdL_right(i));
+//                         bdL_right(i) = minmod(bdL_right(i), b * fdL_right(i));
+//                         fdR_right(i) = minmod(fdR_right(i), b * bdR_right(i));
+//                         bdR_right(i) = minmod(bdR_right(i), b * fdR_right(i));
+
+//                         fdL_left(i) = minmod(fdL_left(i), b * bdL_left(i));
+//                         bdL_left(i) = minmod(bdL_left(i), b * fdL_left(i));
+//                         fdR_left(i) = minmod(fdR_left(i), b * bdR_left(i));
+//                         bdR_left(i) = minmod(bdR_left(i), b * fdR_left(i));
+//                     }
+
+//                     QL_right = flowConservatives[i] + 0.25 * ((1 - k_) * bdL_right + (1 + k_) * fdL_right);
+//                     QR_right = flowConservatives[i+1] - 0.25 * ((1 - k_) * fdR_right + (1 + k_) * bdR_right);
+//                     QL_left = flowConservatives[i-1] + 0.25 * ((1 - k_) * bdL_left + (1 + k_) * fdL_left);
+//                     QR_left = flowConservatives[i] - 0.25 * ((1 - k_) * fdR_left + (1 + k_) * bdR_left);
+//                 }
+//                 else
+//                 {
+//                     // 1st order upwind
+//                     QL_right = flowConservatives[i];
+//                     QR_right =flowConservatives[i+1];
+//                     QL_left = flowConservatives[i-1];
+//                     QR_left = flowConservatives[i];
+//                 }
+
+//                 /* --- Convective flux evaluation --- */
+//                 if (convectiveflux_scheme_ == "Roe")
+//                 {
+//                     F_right = Roe(ConsToPrim(QL_right),
+//                                   ConsToPrim(QR_right));
+//                     F_left  = Roe(ConsToPrim(QL_left),
+//                                  ConsToPrim(QR_left));
+//                 }
+//                 else if (convectiveflux_scheme_ == "vanLeer")
+//                 {
+//                     F_right = vanLeer(ConsToPrim(QL_right),
+//                                       ConsToPrim(QR_right));
+//                     F_left  = vanLeer(ConsToPrim(QL_left),
+//                                      ConsToPrim(QR_left));
+//                 }
+//                 else if (convectiveflux_scheme_ == "AUSM")
+//                 {
+//                     F_right = AUSM(ConsToPrim(QL_right),
+//                                    ConsToPrim(QR_right));
+//                     F_left  = AUSM(ConsToPrim(QL_left),
+//                                   ConsToPrim(QR_left));
+//                 }
+//                 else
+//                 {
+//                     std::cerr << convectiveflux_scheme_
+//                               << " scheme is not supported..." << std::endl;
+//                     std::exit(1);
+//                 }
+
+//                 flowConservatives_new[i] =
+//                     flowConservatives[i] - dt_ / dx_ * (F_right - F_left);
+//                 flowVars[i] = ConsToPrim(flowConservatives_new[i]);
+//             }
+//         }
+
+//         // upadate flowfield
+//         flowConservatives = flowConservatives_new;
+//     }
+
+//     std::cout << "Finish solving flow!\n" << std::endl;
+// }
+
+
+
+
 
 int main()
 {
