@@ -140,10 +140,22 @@ def main():
     flowfield_AUSM.getFlowField("flowData_AUSM.dat")
     # flowfield_vanLeer.plotSolution("flowData_vanLeer.png")
 
+    flowfield_roe_MUSCL = Flowfield("Roe w/ MUSCL")
+    flowfield_roe_MUSCL.getFlowField("flowData_Roe_MUSCL.dat")
+
+    flowfield_vanLeer_MUSCL = Flowfield("van Leer w/ MUSCL")
+    flowfield_vanLeer_MUSCL.getFlowField("flowData_vanLeer_MUSCL.dat")
+
+    flowfield_AUSM_MUSCL = Flowfield("AUSM w/ MUSCL")
+    flowfield_AUSM_MUSCL.getFlowField("flowData_AUSM_MUSCL.dat")
+
     flowfield_list = []
     flowfield_list.append(flowfield_roe)
     flowfield_list.append(flowfield_vanLeer)
     flowfield_list.append(flowfield_AUSM)
+    flowfield_list.append(flowfield_roe_MUSCL)
+    flowfield_list.append(flowfield_vanLeer_MUSCL)
+    flowfield_list.append(flowfield_AUSM_MUSCL)
 
     # --- Exact Solution --- #
     # Initial conditions

@@ -60,17 +60,34 @@ void ShockTubeSolver::SetFlowField(double wall_position, double rhoL, double pL,
             flowVars[i] = prim;
         }
     }
+
+    // Output courant number which is larger out of 2 initial states.
+    double aL = std::sqrt(GAMMA * pL / rhoL);
+    double aR = std::sqrt(GAMMA * pR / rhoR);
+    CFL_ = std::max(aL*dt_/dx_, aR*dt_/dx_);
+    std::cout << "Approx. CFL number: " << CFL_ << std::endl;
 }
 
 void ShockTubeSolver::SetSchemes(std::string convectiveflux_scheme, bool MUSCL, double k)
 {
     convectiveflux_scheme_ = convectiveflux_scheme;
     MUSCL_ = MUSCL;
-    k_ = k;
+    if (k!=-1 && k !=0 && k != 1.0/3.0)
+    {
+        std::cerr << "[ERROR] k is invalid!!" << std::endl;
+        std::exit(1);
+    }
+    else
+        k_ = k;
 
     if (MUSCL_ == true)
     {
         std::cout << "MUSCL scheme enabled." << std::endl;
+        std::cout << "  k is set to " << k_ << std::endl;
+    }
+    else
+    {
+        std::cout << "MUSCL scheme: OFF" << std::endl;
     }
 }
 
@@ -527,7 +544,7 @@ void ShockTubeSolver::Solve()
     std::cout << "Finish solving flow!\n" << std::endl;
 }
 
-
+/* === 1st order accurate in time ==== */
 // void ShockTubeSolver::Solve()
 // {
 //     std::cout << "\nStart solving flow..." << std::endl;

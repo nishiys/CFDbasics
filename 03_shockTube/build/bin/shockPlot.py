@@ -128,17 +128,17 @@ def plotFlowData(flowfield_list: list,
 
 def main():
 
-    # flowfield_roe = Flowfield("Roe")
-    # flowfield_roe.getFlowField("flowData_Roe.dat")
-    # # flowfield_roe.plotSolution("flowData_Roe.png")
+    flowfield_roe = Flowfield("Roe")
+    flowfield_roe.getFlowField("flowData_Roe.dat")
+    # flowfield_roe.plotSolution("flowData_Roe.png")
 
-    # flowfield_vanLeer = Flowfield("van Leer")
-    # flowfield_vanLeer.getFlowField("flowData_vanLeer.dat")
-    # # flowfield_vanLeer.plotSolution("flowData_vanLeer.png")
+    flowfield_vanLeer = Flowfield("van Leer")
+    flowfield_vanLeer.getFlowField("flowData_vanLeer.dat")
+    # flowfield_vanLeer.plotSolution("flowData_vanLeer.png")
 
-    # flowfield_AUSM = Flowfield("AUSM")
-    # flowfield_AUSM.getFlowField("flowData_AUSM.dat")
-    # # flowfield_vanLeer.plotSolution("flowData_vanLeer.png")
+    flowfield_AUSM = Flowfield("AUSM")
+    flowfield_AUSM.getFlowField("flowData_AUSM.dat")
+    # flowfield_vanLeer.plotSolution("flowData_vanLeer.png")
 
     flowfield_roe_MUSCL = Flowfield("Roe w/ MUSCL")
     flowfield_roe_MUSCL.getFlowField("flowData_Roe_MUSCL.dat")
@@ -150,9 +150,9 @@ def main():
     flowfield_AUSM_MUSCL.getFlowField("flowData_AUSM_MUSCL.dat")
 
     flowfield_list = []
-    # flowfield_list.append(flowfield_roe)
-    # flowfield_list.append(flowfield_vanLeer)
-    # flowfield_list.append(flowfield_AUSM)
+    flowfield_list.append(flowfield_roe)
+    flowfield_list.append(flowfield_vanLeer)
+    flowfield_list.append(flowfield_AUSM)
     flowfield_list.append(flowfield_roe_MUSCL)
     flowfield_list.append(flowfield_vanLeer_MUSCL)
     flowfield_list.append(flowfield_AUSM_MUSCL)
