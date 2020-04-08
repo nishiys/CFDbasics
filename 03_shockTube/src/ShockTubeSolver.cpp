@@ -405,23 +405,34 @@ void ShockTubeSolver::Solve()
                 {
                     // with minmod
                     double b = (3 - k_)/(1 - k_);
-                    Eigen::Vector3d Delta_p_right = flowConservatives[i+1] - flowConservatives[i];
-                    Eigen::Vector3d Delta_m_right = flowConservatives[i] - flowConservatives[i-1];
-                    Eigen::Vector3d Delta_p_left = flowConservatives[i] - flowConservatives[i-1];
-                    Eigen::Vector3d Delta_m_left = flowConservatives[i-1] - flowConservatives[i-2];
+                    // fd: fowrard difference, bd: backward difference
+                    Eigen::Vector3d fdL_right = flowConservatives[i+1] - flowConservatives[i];
+                    Eigen::Vector3d bdL_right = flowConservatives[i] - flowConservatives[i-1];
+                    Eigen::Vector3d fdR_right = flowConservatives[i+2] - flowConservatives[i+1];
+                    Eigen::Vector3d bdR_right = flowConservatives[i+1] - flowConservatives[i];
+                    
+                    Eigen::Vector3d fdL_left = flowConservatives[i] - flowConservatives[i-1];
+                    Eigen::Vector3d bdL_left = flowConservatives[i-1] - flowConservatives[i-2];
+                    Eigen::Vector3d fdR_left = flowConservatives[i+1] - flowConservatives[i];
+                    Eigen::Vector3d bdR_left = flowConservatives[i] - flowConservatives[i-1];
 
                     for (int i = 0; i < 3; ++i)
                     {
-                        Delta_p_right(i) = minmod(Delta_p_right(i), b * Delta_m_right(i));
-                        Delta_m_right(i) = minmod(Delta_m_right(i), b * Delta_p_right(i));
-                        Delta_p_left(i) = minmod(Delta_p_left(i), b * Delta_m_left(i));
-                        Delta_m_left(i) = minmod(Delta_m_left(i), b * Delta_p_left(i));
+                        fdL_right(i) = minmod(fdL_right(i), b * bdL_right(i));
+                        bdL_right(i) = minmod(bdL_right(i), b * fdL_right(i));
+                        fdR_right(i) = minmod(fdR_right(i), b * bdR_right(i));
+                        bdR_right(i) = minmod(bdR_right(i), b * fdR_right(i));
+
+                        fdL_left(i) = minmod(fdL_left(i), b * bdL_left(i));
+                        bdL_left(i) = minmod(bdL_left(i), b * fdL_left(i));
+                        fdR_left(i) = minmod(fdR_left(i), b * bdR_left(i));
+                        bdR_left(i) = minmod(bdR_left(i), b * fdR_left(i));
                     }
 
-                    QL_right = flowConservatives[i] + 0.25 * ((1 - k_) * Delta_m_right + (1 + k_) * Delta_p_right);
-                    QR_right = flowConservatives[i+1] - 0.25 * ((1 - k_) * Delta_p_right + (1 + k_) * Delta_m_right);
-                    QL_left = flowConservatives[i-1] + 0.25 * ((1 - k_) * Delta_m_left + (1 + k_) * Delta_p_left);
-                    QR_left = flowConservatives[i] - 0.25 * ((1 - k_) * Delta_p_left + (1 + k_) * Delta_m_left);
+                    QL_right = flowConservatives[i] + 0.25 * ((1 - k_) * bdL_right + (1 + k_) * fdL_right);
+                    QR_right = flowConservatives[i+1] - 0.25 * ((1 - k_) * fdR_right + (1 + k_) * bdR_right);
+                    QL_left = flowConservatives[i-1] + 0.25 * ((1 - k_) * bdL_left + (1 + k_) * fdL_left);
+                    QR_left = flowConservatives[i] - 0.25 * ((1 - k_) * fdR_left + (1 + k_) * bdR_left);
                 }
                 else
                 {
