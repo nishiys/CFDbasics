@@ -1,0 +1,4 @@
+/Users/ysnishi/programs/CFDbasics/50_su2mesh/build/CMakeFiles/rebuild_cache.dir
+/Users/ysnishi/programs/CFDbasics/50_su2mesh/build/CMakeFiles/edit_cache.dir
+/Users/ysnishi/programs/CFDbasics/50_su2mesh/build/CMakeFiles/main.dir
+/Users/ysnishi/programs/CFDbasics/50_su2mesh/build/CMakeFiles/su2meshparser.dir

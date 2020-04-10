@@ -1,0 +1,31 @@
+[
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++   -I../inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk   -o CMakeFiles/main.dir/driver/main.cpp.o -c /Users/ysnishi/programs/CFDbasics/50_su2mesh/driver/main.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/driver/main.cpp"
+},
+
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -Dsu2meshparser_EXPORTS -I../inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -fPIC   -o CMakeFiles/su2meshparser.dir/src/SU2meshparser.cpp.o -c /Users/ysnishi/programs/CFDbasics/50_su2mesh/src/SU2meshparser.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/src/SU2meshparser.cpp"
+},
+
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -Dsu2meshparser_EXPORTS -I../inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -fPIC   -o CMakeFiles/su2meshparser.dir/src/Node2d.cpp.o -c /Users/ysnishi/programs/CFDbasics/50_su2mesh/src/Node2d.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/src/Node2d.cpp"
+},
+
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -Dsu2meshparser_EXPORTS -I../inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -fPIC   -o CMakeFiles/su2meshparser.dir/src/Face2d.cpp.o -c /Users/ysnishi/programs/CFDbasics/50_su2mesh/src/Face2d.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/src/Face2d.cpp"
+},
+
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -Dsu2meshparser_EXPORTS -I../inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -fPIC   -o CMakeFiles/su2meshparser.dir/src/CellQuad4.cpp.o -c /Users/ysnishi/programs/CFDbasics/50_su2mesh/src/CellQuad4.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/50_su2mesh/src/CellQuad4.cpp"
+}
+]

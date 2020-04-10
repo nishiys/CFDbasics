@@ -23,5 +23,6 @@ Flux Difference Splitting (FDS)
 - Roe
 
 Flux Vector Splitting (FVS)
-- Steger Warming
 - van Leer
+- AUSM
+
