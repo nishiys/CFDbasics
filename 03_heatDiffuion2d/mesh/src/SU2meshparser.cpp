@@ -17,6 +17,7 @@ void SU2meshparser::LoadData()
 {
     ReadFile();
     CreateQuadArray();
+    SetMarkersToFaces();
     PrintDebug();
 }
 
@@ -149,10 +150,10 @@ void SU2meshparser::ReadFile()
             ss >> type;
             if (type == LINE)
             {
-                std::vector<std::string> vec(3);
-                vec[0] = tag;
-                ss >> vec[1] >> vec[2];
-                marker_table_.push_back(vec);
+                marker_table_.marker_array.push_back(tag);
+                std::array<unsigned int, 2> edge;
+                ss >> edge[0] >> edge[1];
+                marker_table_.edge_array.push_back(edge);
             }
         }
     }
@@ -162,6 +163,8 @@ void SU2meshparser::ReadFile()
     {
         std::getline(infile, line);
     }
+
+    std::cout << "------------------------------" << std::endl;
 }
 
 void SU2meshparser::CreateQuadArray()
@@ -180,9 +183,71 @@ void SU2meshparser::CreateQuadArray()
     }
 }
 
+void SU2meshparser::SetMarkersToFaces()
+{
+    for (int iTable = 0; iTable < marker_table_.marker_array.size(); ++iTable)
+    {
+        std::string mark = marker_table_.marker_array[iTable];
+        std::array<unsigned int, 2> markered_edge =
+            marker_table_.edge_array[iTable];
+        for (int iCell = 0; iCell < cellarray_.size(); ++iCell)
+        {
+            std::array<unsigned int, 2> edge1;
+            edge1[0] = cellarray_[iCell].GetNode1()->GetID();
+            edge1[1] = cellarray_[iCell].GetNode2()->GetID();
+            std::array<unsigned int, 2> edge2;
+            edge2[0] = cellarray_[iCell].GetNode2()->GetID();
+            edge2[1] = cellarray_[iCell].GetNode3()->GetID();
+            std::array<unsigned int, 2> edge3;
+            edge3[0] = cellarray_[iCell].GetNode3()->GetID();
+            edge3[1] = cellarray_[iCell].GetNode4()->GetID();
+            std::array<unsigned int, 2> edge4;
+            edge4[0] = cellarray_[iCell].GetNode4()->GetID();
+            edge4[1] = cellarray_[iCell].GetNode1()->GetID();
+
+            bool edge1_flag =
+                (edge1[0] == markered_edge[0] && edge1[1] == markered_edge[1]);
+            bool edge2_flag =
+                (edge2[0] == markered_edge[0] && edge2[1] == markered_edge[1]);
+            bool edge3_flag =
+                (edge3[0] == markered_edge[0] && edge3[1] == markered_edge[1]);
+            bool edge4_flag =
+                (edge4[0] == markered_edge[0] && edge4[1] == markered_edge[1]);
+
+            if (edge1_flag)
+            {
+                cellarray_[iCell].Face1()->SetTag(mark);
+            }
+            else if (edge2_flag)
+            {
+                cellarray_[iCell].Face2()->SetTag(mark);
+            }
+            else if (edge3_flag)
+            {
+                cellarray_[iCell].Face3()->SetTag(mark);
+            }
+            else if (edge4_flag)
+            {
+                cellarray_[iCell].Face4()->SetTag(mark);
+            }
+            else
+            {
+                // std::cout << edge1[0] << ", " << edge1[1] << " | "  //
+                //           << edge2[0] << ", " << edge2[1] << " | "  //
+                //           << edge3[0] << ", " << edge3[1] << " | "  //
+                //           << edge4[0] << ", " << edge4[1] << " | "  //
+                //           << markered_edge[0] << ", " << markered_edge[1]
+                //           << std::endl;
+            }
+        }
+    }
+}
+
 void SU2meshparser::PrintDebug()
 {
-    std::cout << "\nElement table: " << std::endl;
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+
+    std::cout << "Element table: " << std::endl;
     for (size_t i = 0; i < element_table_.size(); ++i)
     {
         std::cout << element_table_[i][0] << "\t"  //
@@ -209,6 +274,36 @@ void SU2meshparser::PrintDebug()
                   << cellarray_[i].GetNode3()->GetID() << "\t"
                   << cellarray_[i].GetNode4()->GetID() << std::endl;
     }
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+
+    for (int iCell = 0; iCell < cellarray_.size(); ++iCell)
+    {
+        if (!cellarray_[iCell].Face1()->GetTag().empty())
+        {
+            std::cout << "Cell " << cellarray_[iCell].GetID()
+                      << " has a face w/ tag "
+                      << cellarray_[iCell].Face1()->GetTag() << std::endl;
+        }
+        if (!cellarray_[iCell].Face2()->GetTag().empty())
+        {
+            std::cout << "Cell " << cellarray_[iCell].GetID()
+                      << " has a face w/ tag "
+                      << cellarray_[iCell].Face2()->GetTag() << std::endl;
+        }
+        if (!cellarray_[iCell].Face3()->GetTag().empty())
+        {
+            std::cout << "Cell " << cellarray_[iCell].GetID()
+                      << " has a face w/ tag "
+                      << cellarray_[iCell].Face3()->GetTag() << std::endl;
+        }
+        if (!cellarray_[iCell].Face4()->GetTag().empty())
+        {
+            std::cout << "Cell " << cellarray_[iCell].GetID()
+                      << " has a face w/ tag "
+                      << cellarray_[iCell].Face4()->GetTag() << std::endl;
+        }
+    }
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
 }
 
 void SU2meshparser::WriteVtkFile(std::string vtkfilename)

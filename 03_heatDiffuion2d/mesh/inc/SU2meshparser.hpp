@@ -23,6 +23,7 @@ private:
 
     void ReadFile();
     void CreateQuadArray();
+    void SetMarkersToFaces();
 
     std::vector<CellQuad4> cellarray_;
     // std::vector<Face2d> facearray_;
@@ -36,7 +37,13 @@ private:
     const unsigned int LINE  = 3;
     const unsigned int QUAD4 = 9;
     std::vector<std::vector<unsigned int>> element_table_;
-    std::vector<std::vector<std::string>> marker_table_;
+    struct MarkerTable
+    {
+    public:
+        std::vector<std::string> marker_array;
+        std::vector<std::array<unsigned int, 2>> edge_array;
+    };
+    MarkerTable marker_table_;
 
     void PrintDebug();
 };

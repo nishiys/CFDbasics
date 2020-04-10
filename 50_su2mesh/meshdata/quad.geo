@@ -34,5 +34,3 @@ Recombine Surface "*";
 Transfinite Volume "*";
 //+
 Physical Surface("fluid") += {1};
-//+
-Physical Surface("fluid") += {1};
