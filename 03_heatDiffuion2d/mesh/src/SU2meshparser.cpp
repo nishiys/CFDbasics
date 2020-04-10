@@ -185,12 +185,13 @@ void SU2meshparser::CreateQuadArray()
 
 void SU2meshparser::SetMarkersToFaces()
 {
-    for (int iTable = 0; iTable < marker_table_.marker_array.size(); ++iTable)
+    for (size_t iTable = 0; iTable < marker_table_.marker_array.size();
+         ++iTable)
     {
         std::string mark = marker_table_.marker_array[iTable];
         std::array<unsigned int, 2> markered_edge =
             marker_table_.edge_array[iTable];
-        for (int iCell = 0; iCell < cellarray_.size(); ++iCell)
+        for (size_t iCell = 0; iCell < cellarray_.size(); ++iCell)
         {
             std::array<unsigned int, 2> edge1;
             edge1[0] = cellarray_[iCell].GetNode1()->GetID();
@@ -232,13 +233,29 @@ void SU2meshparser::SetMarkersToFaces()
             }
             else
             {
-                // std::cout << edge1[0] << ", " << edge1[1] << " | "  //
-                //           << edge2[0] << ", " << edge2[1] << " | "  //
-                //           << edge3[0] << ", " << edge3[1] << " | "  //
-                //           << edge4[0] << ", " << edge4[1] << " | "  //
-                //           << markered_edge[0] << ", " << markered_edge[1]
-                //           << std::endl;
+                //
             }
+        }
+    }
+
+    /*--- Set interior tags to interior faces ---*/
+    for (size_t iCell = 0; iCell < cellarray_.size(); ++iCell)
+    {
+        if (cellarray_[iCell].Face1()->GetTag().empty())
+        {
+            cellarray_[iCell].Face1()->SetTag("interior");
+        }
+        if (cellarray_[iCell].Face2()->GetTag().empty())
+        {
+            cellarray_[iCell].Face2()->SetTag("interior");
+        }
+        if (cellarray_[iCell].Face3()->GetTag().empty())
+        {
+            cellarray_[iCell].Face3()->SetTag("interior");
+        }
+        if (cellarray_[iCell].Face4()->GetTag().empty())
+        {
+            cellarray_[iCell].Face4()->SetTag("interior");
         }
     }
 }
@@ -276,7 +293,7 @@ void SU2meshparser::PrintDebug()
     }
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
 
-    for (int iCell = 0; iCell < cellarray_.size(); ++iCell)
+    for (size_t iCell = 0; iCell < cellarray_.size(); ++iCell)
     {
         if (!cellarray_[iCell].Face1()->GetTag().empty())
         {
