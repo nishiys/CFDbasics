@@ -1,0 +1,4 @@
+/Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/build/CMakeFiles/rebuild_cache.dir
+/Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/build/CMakeFiles/edit_cache.dir
+/Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/build/CMakeFiles/main.dir
+/Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/build/CMakeFiles/heatdiffusion2d.dir
