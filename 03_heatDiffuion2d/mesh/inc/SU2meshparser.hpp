@@ -18,6 +18,8 @@ public:
     void LoadData();
     void WriteVtkFile(std::string vtkfilename);
 
+    std::vector<CellQuad4> cellarray_;
+
 private:
     std::string meshfilename_;
 
@@ -26,8 +28,6 @@ private:
     void SetMarkersToFaces();
     void SetNeighborCells();
 
-    std::vector<CellQuad4> cellarray_;
-    // std::vector<Face2d> facearray_;
     std::vector<Node2d> nodearray_;
 
     unsigned int DIM_;

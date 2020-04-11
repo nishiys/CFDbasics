@@ -7,6 +7,7 @@
 
 #include "Face2d.hpp"
 #include "Node2d.hpp"
+#include "Variable.hpp"
 
 class CellQuad4
 {
@@ -48,6 +49,8 @@ public:
     inline CellQuad4* GetNeighbors2Ptr() const { return pNeighbor2_; };
     inline CellQuad4* GetNeighbors3Ptr() const { return pNeighbor3_; };
     inline CellQuad4* GetNeighbors4Ptr() const { return pNeighbor4_; };
+
+    Variable var;
 
 private:
     unsigned int id_;

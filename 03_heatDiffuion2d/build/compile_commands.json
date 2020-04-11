@@ -31,6 +31,12 @@
 
 {
   "directory": "/Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -Dheatdiffusion2d_EXPORTS -I../mesh/inc -I../heatdiffusion2d/inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -fPIC   -o CMakeFiles/heatdiffusion2d.dir/mesh/src/Variable.cpp.o -c /Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/mesh/src/Variable.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/mesh/src/Variable.cpp"
+},
+
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/build",
   "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -Dheatdiffusion2d_EXPORTS -I../mesh/inc -I../heatdiffusion2d/inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -fPIC   -o CMakeFiles/heatdiffusion2d.dir/heatdiffusion2d/src/HeatDiffusion2d.cpp.o -c /Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/heatdiffusion2d/src/HeatDiffusion2d.cpp",
   "file": "/Users/ysnishi/programs/CFDbasics/03_heatDiffuion2d/heatdiffusion2d/src/HeatDiffusion2d.cpp"
 }

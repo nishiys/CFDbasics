@@ -12,10 +12,13 @@ public:
 
     void SetConfiguration(std::string meshfilename);
     void GenerateGrid();
-    void SetBoundaryConditions();
+    void SetBoundaryConditions(std::string tag, std::string bc_type,
+                               double temperature);
+    void SetInitialConditions(double init_temperature);
     void Solve();
 
 private:
     std::string meshfilename_;
+    std::vector<CellQuad4> cells_;
 };
 }  // namespace heatdiff

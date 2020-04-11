@@ -15,7 +15,8 @@ list(
   ${CMAKE_CURRENT_SOURCE_DIR}/mesh/src/SU2meshparser.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/mesh/src/Node2d.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/mesh/src/Face2d.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/mesh/src/CellQuad4.cpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/mesh/src/CellQuad4.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/mesh/src/Variable.cpp)
 
 list(
   APPEND
@@ -23,7 +24,8 @@ list(
   ${CMAKE_CURRENT_SOURCE_DIR}/mesh/inc/SU2meshparser.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/mesh/inc/Node2d.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/mesh/inc/Face2d.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/mesh/inc/CellQuad4.hpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/mesh/inc/CellQuad4.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/mesh/inc/Variable.hpp)
 
 list(APPEND HEAT_SOURCE_FILES
      ${CMAKE_CURRENT_SOURCE_DIR}/heatdiffusion2d/src/HeatDiffusion2d.cpp)
