@@ -21,3 +21,9 @@
 4	1380	1586640234773967918	CMakeFiles/heatdiffusion2d.dir/heatdiffusion2d/src/HeatDiffusion2d.cpp.o	f9680e28823ab1d9
 1380	1477	1586640234876457812	libheatdiffusion2d.dylib	ea4e3d1bb73932c3
 1477	1536	1586640234938733749	bin/main	ec3e51abcc6e0e94
+4	3120	1586644688877592613	CMakeFiles/main.dir/driver/main.cpp.o	bfd58405b1595293
+12	3355	1586644689135804335	CMakeFiles/heatdiffusion2d.dir/mesh/src/CellQuad4.cpp.o	56b33796190ae1d1
+3	2324	1586645094466960086	CMakeFiles/heatdiffusion2d.dir/mesh/src/SU2meshparser.cpp.o	e101aa4aaa06607b
+5	1211	1586645212353285930	CMakeFiles/heatdiffusion2d.dir/heatdiffusion2d/src/HeatDiffusion2d.cpp.o	f9680e28823ab1d9
+1211	1304	1586645212452290625	libheatdiffusion2d.dylib	ea4e3d1bb73932c3
+1304	1376	1586645212525052752	bin/main	ec3e51abcc6e0e94

@@ -19,7 +19,7 @@ void HeatDiffusion2d::GenerateGrid()
     meshparser.LoadData();
     meshparser.WriteVtkFile("grid.vtk");
 
-    cells_ = std::move(meshparser.cellarray_);
+    cells_ = std::move(meshparser.cellarray);
 }
 
 void HeatDiffusion2d::SetBoundaryConditions(std::string tag,
@@ -28,32 +28,14 @@ void HeatDiffusion2d::SetBoundaryConditions(std::string tag,
 {
     for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
     {
-        if (cells_[iCell].Face1()->GetTag() == tag)
+        for (size_t iFace = 0; iFace < 4; ++iFace)
         {
-            if (bc_type == "Dirichlet")
+            if (cells_[iCell].Face(iFace)->GetTag() == tag)
             {
-                cells_[iCell].var.temperature = temperature;
-            }
-        }
-        if (cells_[iCell].Face2()->GetTag() == tag)
-        {
-            if (bc_type == "Dirichlet")
-            {
-                cells_[iCell].var.temperature = temperature;
-            }
-        }
-        if (cells_[iCell].Face3()->GetTag() == tag)
-        {
-            if (bc_type == "Dirichlet")
-            {
-                cells_[iCell].var.temperature = temperature;
-            }
-        }
-        if (cells_[iCell].Face4()->GetTag() == tag)
-        {
-            if (bc_type == "Dirichlet")
-            {
-                cells_[iCell].var.temperature = temperature;
+                if (bc_type == "Dirichlet")
+                {
+                    cells_[iCell].var.temperature = temperature;
+                }
             }
         }
     }
@@ -62,21 +44,12 @@ void HeatDiffusion2d::SetInitialConditions(double init_temperature)
 {
     for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
     {
-        if (cells_[iCell].Face1()->GetTag() == "interior")
+        for (size_t iFace = 0; iFace < 4; ++iFace)
         {
-            cells_[iCell].var.temperature = init_temperature;
-        }
-        if (cells_[iCell].Face2()->GetTag() == "interior")
-        {
-            cells_[iCell].var.temperature = init_temperature;
-        }
-        if (cells_[iCell].Face3()->GetTag() == "interior")
-        {
-            cells_[iCell].var.temperature = init_temperature;
-        }
-        if (cells_[iCell].Face4()->GetTag() == "interior")
-        {
-            cells_[iCell].var.temperature = init_temperature;
+            if (cells_[iCell].Face(iFace)->GetTag() == "interior")
+            {
+                cells_[iCell].var.temperature = init_temperature;
+            }
         }
     }
 }

@@ -18,7 +18,7 @@ public:
     void LoadData();
     void WriteVtkFile(std::string vtkfilename);
 
-    std::vector<CellQuad4> cellarray_;
+    std::vector<CellQuad4> cellarray;
 
 private:
     std::string meshfilename_;
@@ -30,13 +30,13 @@ private:
 
     std::vector<Node2d> nodearray_;
 
-    unsigned int DIM_;
-    unsigned int NElement_;
-    unsigned int NPoint_;
-    unsigned int NMarker_;
+    unsigned int nDim_;
+    unsigned int nElement_;
+    unsigned int nPoint_;
+    unsigned int nMarker_;
 
-    const unsigned int LINE  = 3;
-    const unsigned int QUAD4 = 9;
+    const unsigned int VTK_LINE  = 3;
+    const unsigned int VTK_QUAD4 = 9;
     std::vector<std::vector<unsigned int>> element_table_;
     struct MarkerTable
     {
