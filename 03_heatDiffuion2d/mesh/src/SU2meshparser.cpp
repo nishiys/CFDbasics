@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <tuple>
 
 namespace su2mesh
 {
@@ -18,6 +19,7 @@ void SU2meshparser::LoadData()
     ReadFile();
     CreateQuadArray();
     SetMarkersToFaces();
+    SetNeighborCells();
     PrintDebug();
 }
 
@@ -260,6 +262,238 @@ void SU2meshparser::SetMarkersToFaces()
     }
 }
 
+void SU2meshparser::SetNeighborCells()
+{
+    for (size_t iCell = 0; iCell < cellarray_.size(); ++iCell)
+    {
+        // Search over the element table & Get candidate neighbor cells
+        std::vector<unsigned int> candidateNeighborCellsIDs;
+        unsigned int node1ID = cellarray_[iCell].GetNode1()->GetID();
+        unsigned int node2ID = cellarray_[iCell].GetNode2()->GetID();
+        unsigned int node3ID = cellarray_[iCell].GetNode3()->GetID();
+        unsigned int node4ID = cellarray_[iCell].GetNode4()->GetID();
+
+        std::cout << node1ID << " " << node2ID << " " << node3ID << " "
+                  << node4ID << std::endl;
+
+        for (size_t jCell = 0; jCell < element_table_.size(); ++jCell)
+        {
+            // add candidate neighbors IDs
+            if (iCell != jCell)
+            {
+                if ((element_table_[jCell][1] == node1ID) ||
+                    (element_table_[jCell][1] == node2ID) ||
+                    (element_table_[jCell][1] == node3ID) ||
+                    (element_table_[jCell][1] == node4ID) ||
+                    (element_table_[jCell][2] == node1ID) ||
+                    (element_table_[jCell][2] == node2ID) ||
+                    (element_table_[jCell][2] == node3ID) ||
+                    (element_table_[jCell][2] == node4ID) ||
+                    (element_table_[jCell][3] == node1ID) ||
+                    (element_table_[jCell][3] == node2ID) ||
+                    (element_table_[jCell][3] == node3ID) ||
+                    (element_table_[jCell][3] == node4ID) ||
+                    (element_table_[jCell][4] == node1ID) ||
+                    (element_table_[jCell][4] == node2ID) ||
+                    (element_table_[jCell][4] == node3ID) ||
+                    (element_table_[jCell][4] == node4ID))
+                {
+                    candidateNeighborCellsIDs.push_back(jCell);
+                }
+            }
+        }
+
+        // Loop over candidate neighbors & Set pointers to neighbors
+        bool isInterior_face1 =
+            (cellarray_[iCell].Face1()->GetTag() == "interior");
+        bool isInterior_face2 =
+            (cellarray_[iCell].Face2()->GetTag() == "interior");
+        bool isInterior_face3 =
+            (cellarray_[iCell].Face3()->GetTag() == "interior");
+        bool isInterior_face4 =
+            (cellarray_[iCell].Face4()->GetTag() == "interior");
+
+        std::array<unsigned int, 2> edge1;
+        edge1[0] = cellarray_[iCell].GetNode1()->GetID();
+        edge1[1] = cellarray_[iCell].GetNode2()->GetID();
+        std::array<unsigned int, 2> edge2;
+        edge2[0] = cellarray_[iCell].GetNode2()->GetID();
+        edge2[1] = cellarray_[iCell].GetNode3()->GetID();
+        std::array<unsigned int, 2> edge3;
+        edge3[0] = cellarray_[iCell].GetNode3()->GetID();
+        edge3[1] = cellarray_[iCell].GetNode4()->GetID();
+        std::array<unsigned int, 2> edge4;
+        edge4[0] = cellarray_[iCell].GetNode4()->GetID();
+        edge4[1] = cellarray_[iCell].GetNode1()->GetID();
+
+        unsigned int nNeighbors = candidateNeighborCellsIDs.size();
+        if (isInterior_face1)
+        {
+            for (size_t i = 0; i < nNeighbors; ++i)
+            {
+                std::array<unsigned int, 2> candidate_edge1;
+                candidate_edge1[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode1()
+                                         ->GetID();
+                candidate_edge1[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode2()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge2;
+                candidate_edge2[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode2()
+                                         ->GetID();
+                candidate_edge2[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode3()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge3;
+                candidate_edge3[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode3()
+                                         ->GetID();
+                candidate_edge3[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode4()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge4;
+                candidate_edge4[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode4()
+                                         ->GetID();
+                candidate_edge4[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode1()
+                                         ->GetID();
+
+                if (edge1 == candidate_edge1 || edge1 == candidate_edge2 ||
+                    edge1 == candidate_edge3 || edge1 == candidate_edge4)
+                {
+                    cellarray_[iCell].SetNeighbor1Ptr(
+                        &cellarray_[candidateNeighborCellsIDs[i]]);
+                }
+            }
+        }
+        if (isInterior_face2)
+        {
+            for (size_t i = 0; i < nNeighbors; ++i)
+            {
+                std::array<unsigned int, 2> candidate_edge1;
+                candidate_edge1[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode1()
+                                         ->GetID();
+                candidate_edge1[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode2()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge2;
+                candidate_edge2[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode2()
+                                         ->GetID();
+                candidate_edge2[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode3()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge3;
+                candidate_edge3[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode3()
+                                         ->GetID();
+                candidate_edge3[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode4()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge4;
+                candidate_edge4[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode4()
+                                         ->GetID();
+                candidate_edge4[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode1()
+                                         ->GetID();
+
+                if (edge2 == candidate_edge1 || edge2 == candidate_edge2 ||
+                    edge2 == candidate_edge3 || edge2 == candidate_edge4)
+                {
+                    cellarray_[iCell].SetNeighbor2Ptr(
+                        &cellarray_[candidateNeighborCellsIDs[i]]);
+                }
+            }
+        }
+        if (isInterior_face3)
+        {
+            for (size_t i = 0; i < nNeighbors; ++i)
+            {
+                std::array<unsigned int, 2> candidate_edge1;
+                candidate_edge1[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode1()
+                                         ->GetID();
+                candidate_edge1[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode2()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge2;
+                candidate_edge2[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode2()
+                                         ->GetID();
+                candidate_edge2[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode3()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge3;
+                candidate_edge3[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode3()
+                                         ->GetID();
+                candidate_edge3[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode4()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge4;
+                candidate_edge4[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode4()
+                                         ->GetID();
+                candidate_edge4[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode1()
+                                         ->GetID();
+
+                if (edge3 == candidate_edge1 || edge3 == candidate_edge2 ||
+                    edge3 == candidate_edge3 || edge3 == candidate_edge4)
+                {
+                    cellarray_[iCell].SetNeighbor3Ptr(
+                        &cellarray_[candidateNeighborCellsIDs[i]]);
+                }
+            }
+        }
+        if (isInterior_face4)
+        {
+            for (size_t i = 0; i < nNeighbors; ++i)
+            {
+                std::array<unsigned int, 2> candidate_edge1;
+                candidate_edge1[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode1()
+                                         ->GetID();
+                candidate_edge1[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode2()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge2;
+                candidate_edge2[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode2()
+                                         ->GetID();
+                candidate_edge2[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode3()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge3;
+                candidate_edge3[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode3()
+                                         ->GetID();
+                candidate_edge3[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode4()
+                                         ->GetID();
+                std::array<unsigned int, 2> candidate_edge4;
+                candidate_edge4[1] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode4()
+                                         ->GetID();
+                candidate_edge4[0] = cellarray_[candidateNeighborCellsIDs[i]]
+                                         .GetNode1()
+                                         ->GetID();
+
+                if (edge4 == candidate_edge1 || edge4 == candidate_edge2 ||
+                    edge4 == candidate_edge3 || edge4 == candidate_edge4)
+                {
+                    cellarray_[iCell].SetNeighbor4Ptr(
+                        &cellarray_[candidateNeighborCellsIDs[i]]);
+                }
+            }
+        }
+    }
+}
+
 void SU2meshparser::PrintDebug()
 {
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
@@ -318,6 +552,46 @@ void SU2meshparser::PrintDebug()
             std::cout << "Cell " << cellarray_[iCell].GetID()
                       << " has a face w/ tag "
                       << cellarray_[iCell].Face4()->GetTag() << std::endl;
+        }
+    }
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+
+    for (size_t iCell = 0; iCell < cellarray_.size(); ++iCell)
+    {
+        auto neighbor1Ptr = cellarray_[iCell].GetNeighbors1Ptr();
+        auto neighbor2Ptr = cellarray_[iCell].GetNeighbors2Ptr();
+        auto neighbor3Ptr = cellarray_[iCell].GetNeighbors3Ptr();
+        auto neighbor4Ptr = cellarray_[iCell].GetNeighbors4Ptr();
+
+        if (neighbor1Ptr != nullptr)
+        {
+            std::cout << "Cell " << cellarray_[iCell].GetID()
+                      << " is ajacent to "
+                      << cellarray_[iCell].GetNeighbors1Ptr()->GetID()
+                      << std::endl;
+            ;
+        }
+        if (neighbor2Ptr != nullptr)
+        {
+            std::cout << "Cell " << cellarray_[iCell].GetID()
+                      << " is ajacent to "
+                      << cellarray_[iCell].GetNeighbors2Ptr()->GetID()
+                      << std::endl;
+        }
+        if (neighbor3Ptr != nullptr)
+        {
+            std::cout << "Cell " << cellarray_[iCell].GetID()
+                      << " is ajacent to "
+                      << cellarray_[iCell].GetNeighbors3Ptr()->GetID()
+                      << std::endl;
+            ;
+        }
+        if (neighbor4Ptr != nullptr)
+        {
+            std::cout << "Cell " << cellarray_[iCell].GetID()
+                      << " is ajacent to "
+                      << cellarray_[iCell].GetNeighbors4Ptr()->GetID()
+                      << std::endl;
         }
     }
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;

@@ -2,6 +2,7 @@
 
 #include <Eigen/Core>
 #include <array>
+#include <tuple>
 #include <vector>
 
 #include "Face2d.hpp"
@@ -26,6 +27,28 @@ public:
     inline Face2d* Face3() { return &face3_; };
     inline Face2d* Face4() { return &face4_; };
 
+    inline void SetNeighbor1Ptr(CellQuad4* pCellQuad)
+    {
+        pNeighbor1_ = pCellQuad;
+    };
+    inline void SetNeighbor2Ptr(CellQuad4* pCellQuad)
+    {
+        pNeighbor2_ = pCellQuad;
+    };
+    inline void SetNeighbor3Ptr(CellQuad4* pCellQuad)
+    {
+        pNeighbor3_ = pCellQuad;
+    };
+    inline void SetNeighbor4Ptr(CellQuad4* pCellQuad)
+    {
+        pNeighbor4_ = pCellQuad;
+    };
+
+    inline CellQuad4* GetNeighbors1Ptr() const { return pNeighbor1_; };
+    inline CellQuad4* GetNeighbors2Ptr() const { return pNeighbor2_; };
+    inline CellQuad4* GetNeighbors3Ptr() const { return pNeighbor3_; };
+    inline CellQuad4* GetNeighbors4Ptr() const { return pNeighbor4_; };
+
 private:
     unsigned int id_;
     Node2d* pNode1_;
@@ -38,10 +61,10 @@ private:
     Face2d face3_;
     Face2d face4_;
 
-    CellQuad4* neighbor1_;
-    CellQuad4* neighbor2_;
-    CellQuad4* neighbor3_;
-    CellQuad4* neighbor4_;
+    CellQuad4* pNeighbor1_;
+    CellQuad4* pNeighbor2_;
+    CellQuad4* pNeighbor3_;
+    CellQuad4* pNeighbor4_;
 
     void CheckFaceNormals();
     void CalcCentroid();

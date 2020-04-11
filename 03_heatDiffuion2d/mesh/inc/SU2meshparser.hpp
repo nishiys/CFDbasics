@@ -24,6 +24,7 @@ private:
     void ReadFile();
     void CreateQuadArray();
     void SetMarkersToFaces();
+    void SetNeighborCells();
 
     std::vector<CellQuad4> cellarray_;
     // std::vector<Face2d> facearray_;

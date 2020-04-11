@@ -14,7 +14,11 @@ CellQuad4::CellQuad4(unsigned int id, Node2d* pNode1, Node2d* pNode2,
       face2_(pNode2_, pNode3_),
       face3_(pNode3_, pNode4_),
       face4_(pNode4_, pNode1_),
-      centroid_(2)
+      centroid_(2),
+      pNeighbor1_(nullptr),
+      pNeighbor2_(nullptr),
+      pNeighbor3_(nullptr),
+      pNeighbor4_(nullptr)
 {
     CalcCentroid();
     CheckFaceNormals();
