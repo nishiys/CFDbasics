@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Node2d.hpp"
+#include "Variable.hpp"
 
 class Face2d
 {
@@ -23,6 +24,8 @@ public:
 
     inline void SetTag(std::string tagname) { tag_ = tagname; };
     inline std::string GetTag() const { return tag_; };
+
+    Variable facevar;
 
 private:
     unsigned int id_;

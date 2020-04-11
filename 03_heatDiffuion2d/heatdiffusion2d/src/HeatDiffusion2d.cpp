@@ -34,7 +34,8 @@ void HeatDiffusion2d::SetBoundaryConditions(std::string tag,
             {
                 if (bc_type == "Dirichlet")
                 {
-                    cells_[iCell].var.temperature = temperature;
+                    cells_[iCell].Face(iFace)->facevar.temperature =
+                        temperature;
                 }
             }
         }
@@ -48,7 +49,8 @@ void HeatDiffusion2d::SetInitialConditions(double init_temperature)
         {
             if (cells_[iCell].Face(iFace)->GetTag() == "interior")
             {
-                cells_[iCell].var.temperature = init_temperature;
+                cells_[iCell].Face(iFace)->facevar.temperature =
+                    init_temperature;
             }
         }
     }
@@ -61,8 +63,13 @@ void HeatDiffusion2d::PrintDebug()
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
     for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
     {
-        std::cout << "Cell " << cells_[iCell].GetID() << ": "  //
-                  << cells_[iCell].var.temperature << " [deg]" << std::endl;
+        std::cout << "Cell " << cells_[iCell].GetID() << ": " << std::endl;
+        for (size_t iFace = 0; iFace < 4; ++iFace)
+        {
+            std::cout << "  Face " << iFace << ": "
+                      << cells_[iCell].Face(iFace)->facevar.temperature
+                      << " [deg]" << std::endl;
+        }
     }
 }
 

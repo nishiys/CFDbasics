@@ -62,7 +62,7 @@ public:
     // inline CellQuad4* GetNeighbors3Ptr() const { return pNeighbor3_; };
     // inline CellQuad4* GetNeighbors4Ptr() const { return pNeighbor4_; };
 
-    Variable var;
+    Variable cellvar;
 
 private:
     unsigned int id_;
