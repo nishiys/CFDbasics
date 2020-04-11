@@ -1,5 +1,7 @@
 #include "HeatDiffusion2d.hpp"
 
+#include <iostream>
+
 namespace heatdiff
 {
 HeatDiffusion2d::HeatDiffusion2d() {}
@@ -80,5 +82,15 @@ void HeatDiffusion2d::SetInitialConditions(double init_temperature)
 }
 
 void HeatDiffusion2d::Solve() {}
+
+void HeatDiffusion2d::PrintDebug()
+{
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+    for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
+    {
+        std::cout << "Cell " << cells_[iCell].GetID() << ": "  //
+                  << cells_[iCell].var.temperature << " [deg]" << std::endl;
+    }
+}
 
 }  // namespace heatdiff

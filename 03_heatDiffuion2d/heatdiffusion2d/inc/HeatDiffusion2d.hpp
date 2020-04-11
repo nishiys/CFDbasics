@@ -17,6 +17,9 @@ public:
     void SetInitialConditions(double init_temperature);
     void Solve();
 
+    // For debug
+    void PrintDebug();
+
 private:
     std::string meshfilename_;
     std::vector<CellQuad4> cells_;

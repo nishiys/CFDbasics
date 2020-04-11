@@ -2,7 +2,6 @@
 
 #include <Eigen/Core>
 #include <array>
-#include <tuple>
 #include <vector>
 
 #include "Face2d.hpp"

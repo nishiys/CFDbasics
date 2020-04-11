@@ -17,3 +17,7 @@
 4	1113	1586638933427554008	CMakeFiles/heatdiffusion2d.dir/heatdiffusion2d/src/HeatDiffusion2d.cpp.o	f9680e28823ab1d9
 1114	1186	1586638933507527426	libheatdiffusion2d.dylib	ea4e3d1bb73932c3
 1186	1253	1586638933576112302	bin/main	ec3e51abcc6e0e94
+3	1311	1586640234701666956	CMakeFiles/main.dir/driver/main.cpp.o	bfd58405b1595293
+4	1380	1586640234773967918	CMakeFiles/heatdiffusion2d.dir/heatdiffusion2d/src/HeatDiffusion2d.cpp.o	f9680e28823ab1d9
+1380	1477	1586640234876457812	libheatdiffusion2d.dylib	ea4e3d1bb73932c3
+1477	1536	1586640234938733749	bin/main	ec3e51abcc6e0e94

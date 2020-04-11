@@ -26,6 +26,9 @@ int main()
     heat2dsolver.SetBoundaryConditions("bottom", "Dirichlet", bottom_temp);
     heat2dsolver.SetBoundaryConditions("right", "Dirichlet", right_temp);
     heat2dsolver.SetInitialConditions(init_temp);
+
+    heat2dsolver.PrintDebug();
+
     heat2dsolver.Solve();
     return 0;
 }
