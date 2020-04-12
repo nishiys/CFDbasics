@@ -2,6 +2,9 @@
 
 #include <array>
 #include <string>
+
+#include "Variable.hpp"
+
 class Node2d
 {
 public:
@@ -12,6 +15,8 @@ public:
     inline unsigned int GetID() const { return id_; };
     inline double GetX() const { return coords_[0]; };
     inline double GetY() const { return coords_[1]; };
+
+    Variable nodevar;
 
 private:
     unsigned int id_;

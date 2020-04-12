@@ -89,6 +89,8 @@ void HeatDiffusion2d::ConstructMatrices()
 {
     CalcInitialValues();
 
+    PrintDebug();
+
     int nSize = cells_.size();
     A.resize(nSize, nSize);
     T.resize(nSize);
@@ -182,8 +184,14 @@ void HeatDiffusion2d::Solve()
     /*--- Update variables ---*/
     for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
     {
+        // Cell value
         cells_[iCell].cellvar.temperature = T(iCell);
+        // Face value
+        //TODO
     }
+
+    /*--- Calculate Nodal values ---*/
+    //TODO
 }
 
 void HeatDiffusion2d::WriteResultsToVtk(std::string vtkfilename)
@@ -258,6 +266,7 @@ void HeatDiffusion2d::PrintDebug()
                       << " [deg]" << std::endl;
         }
     }
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
 }
 
 }  // namespace heatdiff

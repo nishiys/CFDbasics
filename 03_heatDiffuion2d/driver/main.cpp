@@ -31,7 +31,6 @@ int main()
 
     heat2dsolver.Solve();
     heat2dsolver.WriteResultsToVtk("quad_result.vtk");
-    heat2dsolver.PrintDebug();
 
     return 0;
 }
