@@ -20,6 +20,7 @@ void SU2meshparser::LoadData()
     CreateQuadArray();
     SetMarkersToFaces();
     SetNeighborCells();
+    SetVectorsToNeighbors();
     PrintDebug();
 }
 
@@ -348,6 +349,17 @@ void SU2meshparser::SetNeighborCells()
     }
 }
 
+void SU2meshparser::SetVectorsToNeighbors()
+{
+    for (size_t iCell = 0; iCell < cellarray.size(); ++iCell)
+    {
+        for (size_t iFace = 0; iFace < 4; ++iFace)
+        {
+            cellarray[iCell].SetVectorToNeighbor(iFace);
+        }
+    }
+}
+
 void SU2meshparser::PrintDebug()
 {
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
@@ -407,6 +419,26 @@ void SU2meshparser::PrintDebug()
                 std::cout << "Cell " << cellarray[iCell].GetID()
                           << " is ajacent to "
                           << cellarray[iCell].GetNeighborPtr(iFace)->GetID()
+                          << std::endl;
+            }
+        }
+    }
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+
+    for (size_t iCell = 0; iCell < cellarray.size(); ++iCell)
+    {
+        std::cout << "Cell " << iCell << ":" << std::endl;
+        for (size_t iFace = 0; iFace < 4; ++iFace)
+        {
+            if (cellarray[iCell].GetNeighborPtr(iFace) != nullptr)
+            {
+                Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "[", "]");
+
+                std::cout << "  vector to neighbor " << iFace << ": "
+                          << cellarray[iCell]
+                                 .GetVectorToNeighbor(iFace)
+                                 .transpose()
+                                 .format(CleanFmt)
                           << std::endl;
             }
         }

@@ -27,6 +27,7 @@ private:
     void CreateQuadArray();
     void SetMarkersToFaces();
     void SetNeighborCells();
+    void SetVectorsToNeighbors();
 
     std::vector<Node2d> nodearray_;
 
