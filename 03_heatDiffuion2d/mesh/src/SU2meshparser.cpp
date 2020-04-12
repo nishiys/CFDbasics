@@ -97,8 +97,8 @@ void SU2meshparser::ReadFile()
         std::cout << "Number of Points: " << nPoint_ << std::endl;
     }
 
-    // Get nodearray_
-    nodearray_.resize(nPoint_);
+    // Get nodearray
+    nodearray.resize(nPoint_);
     for (size_t i = 0; i < nPoint_; ++i)
     {
         std::getline(infile, line);
@@ -108,7 +108,7 @@ void SU2meshparser::ReadFile()
         unsigned int id;
         ss >> x >> y >> id;
         Node2d node_obj(id, x, y);
-        nodearray_[i] = node_obj;
+        nodearray[i] = node_obj;
     }
 
     // Get Markers
@@ -176,10 +176,10 @@ void SU2meshparser::CreateQuadArray()
     for (size_t i = 0; i < element_table_.size(); ++i)
     {
         unsigned int id = element_table_[i][0];
-        Node2d& node1   = nodearray_[element_table_[i][1]];
-        Node2d& node2   = nodearray_[element_table_[i][2]];
-        Node2d& node3   = nodearray_[element_table_[i][3]];
-        Node2d& node4   = nodearray_[element_table_[i][4]];
+        Node2d& node1   = nodearray[element_table_[i][1]];
+        Node2d& node2   = nodearray[element_table_[i][2]];
+        Node2d& node3   = nodearray[element_table_[i][3]];
+        Node2d& node4   = nodearray[element_table_[i][4]];
 
         CellQuad4 quad(id, &node1, &node2, &node3, &node4);
         cellarray[i] = quad;
@@ -375,11 +375,11 @@ void SU2meshparser::PrintDebug()
     }
 
     std::cout << "\nNode array: " << std::endl;
-    for (size_t i = 0; i < nodearray_.size(); ++i)
+    for (size_t i = 0; i < nodearray.size(); ++i)
     {
-        std::cout << nodearray_[i].GetID() << "\t"  //
-                  << nodearray_[i].GetX() << "\t"   //
-                  << nodearray_[i].GetY() << std::endl;
+        std::cout << nodearray[i].GetID() << "\t"  //
+                  << nodearray[i].GetX() << "\t"   //
+                  << nodearray[i].GetY() << std::endl;
     }
 
     std::cout << "\nCell array: " << std::endl;
@@ -430,13 +430,21 @@ void SU2meshparser::PrintDebug()
         std::cout << "Cell " << iCell << ":" << std::endl;
         for (size_t iFace = 0; iFace < 4; ++iFace)
         {
+            Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "[", "]");
             if (cellarray[iCell].GetNeighborPtr(iFace) != nullptr)
             {
-                Eigen::IOFormat CleanFmt(3, 0, ", ", "\n", "[", "]");
-
                 std::cout << "  vector to neighbor " << iFace << ": "
                           << cellarray[iCell]
                                  .GetVectorToNeighbor(iFace)
+                                 .transpose()
+                                 .format(CleanFmt)
+                          << std::endl;
+            }
+            else
+            {
+                std::cout << "  normal vector to boundary " << iFace << ": "
+                          << cellarray[iCell]
+                                 .GetNormalVectorToBoundary(iFace)
                                  .transpose()
                                  .format(CleanFmt)
                           << std::endl;
@@ -462,8 +470,8 @@ void SU2meshparser::WriteVtkFile(std::string vtkfilename)
             << "double " << std::endl;
     for (unsigned int i = 0; i < nPoint_; ++i)
     {
-        outfile << nodearray_[i].GetX() << "\t"  //
-                << nodearray_[i].GetY() << "\t" << 0 << std::endl;
+        outfile << nodearray[i].GetX() << "\t"  //
+                << nodearray[i].GetY() << "\t" << 0 << std::endl;
     }
 
     outfile << "CELLS " << nElement_ << " " << 5 * nElement_ << std::endl;

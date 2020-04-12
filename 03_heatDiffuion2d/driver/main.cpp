@@ -9,6 +9,7 @@ int main()
     double thermal_cond = 100;
     // Thickness of the plate (m)
     double thickness = 0.1;
+
     // BCs
     double top_temp    = 250;
     double left_temp   = 100;
@@ -19,16 +20,18 @@ int main()
 
     /*--- Solve ---*/
     heatdiff::HeatDiffusion2d heat2dsolver;
-    heat2dsolver.SetConfiguration("quad.su2");
+    heat2dsolver.SetMeshConfiguration("quad.su2");
     heat2dsolver.GenerateGrid();
+    heat2dsolver.SetFlowConfig(volumetric_source, thermal_cond, thickness);
     heat2dsolver.SetBoundaryConditions("top", "Dirichlet", top_temp);
     heat2dsolver.SetBoundaryConditions("left", "Dirichlet", left_temp);
     heat2dsolver.SetBoundaryConditions("bottom", "Dirichlet", bottom_temp);
     heat2dsolver.SetBoundaryConditions("right", "Dirichlet", right_temp);
     heat2dsolver.SetInitialConditions(init_temp);
 
+    heat2dsolver.Solve();
+    heat2dsolver.WriteResultsToVtk("quad_result.vtk");
     heat2dsolver.PrintDebug();
 
-    heat2dsolver.Solve();
     return 0;
 }

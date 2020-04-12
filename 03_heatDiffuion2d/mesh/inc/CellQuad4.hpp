@@ -48,6 +48,10 @@ public:
     {
         return vectorToNeighbors_[index];
     }
+    inline Eigen::Vector2d GetNormalVectorToBoundary(unsigned int index) const
+    {
+        return normalvectorToBoundaries_[index];
+    }
 
     Variable cellvar;
 

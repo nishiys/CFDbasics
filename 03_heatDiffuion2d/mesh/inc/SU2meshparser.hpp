@@ -19,6 +19,7 @@ public:
     void WriteVtkFile(std::string vtkfilename);
 
     std::vector<CellQuad4> cellarray;
+    std::vector<Node2d> nodearray;
 
 private:
     std::string meshfilename_;
@@ -28,8 +29,6 @@ private:
     void SetMarkersToFaces();
     void SetNeighborCells();
     void SetVectorsToNeighbors();
-
-    std::vector<Node2d> nodearray_;
 
     unsigned int nDim_;
     unsigned int nElement_;
