@@ -26,6 +26,7 @@ void HeatDiffusion2d::GenerateGrid()
 void HeatDiffusion2d::SetFlowConfig(double volumetric_source,
                                     double thermal_cond, double thickness)
 {
+    thickness_ = thickness;
     for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
     {
         cells_[iCell].cellvar.volumetric_source = volumetric_source;
@@ -50,6 +51,7 @@ void HeatDiffusion2d::SetBoundaryConditions(std::string tag,
                 {
                     cells_[iCell].Face(iFace)->facevar.temperature =
                         temperature;
+                    cells_[iCell].Face(iFace)->SetBcType(bc_type);
                 }
             }
         }
@@ -83,7 +85,7 @@ void HeatDiffusion2d::CalcInitialValues()
     }
 }
 
-void HeatDiffusion2d::InitializeMatrices()
+void HeatDiffusion2d::ConstructMatrices()
 {
     CalcInitialValues();
 
@@ -92,13 +94,97 @@ void HeatDiffusion2d::InitializeMatrices()
     T.resize(nSize);
     B.resize(nSize);
 
+    /*--- B vector (Source terms) ---*/
     for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
     {
-        T(iCell) = cells_[iCell].cellvar.temperature;
+        // volumetric contribution
+        B(iCell) = cells_[iCell].cellvar.volumetric_source *
+                   cells_[iCell].GetVolume() * thickness_;
+        // boundary contribution
+        for (size_t iFace = 0; iFace < 4; ++iFace)
+        {
+            if (cells_[iCell].Face(iFace)->GetBcType() == "Dirichlet")
+            {
+                double Twall = cells_[iCell].Face(iFace)->facevar.temperature;
+                double source_from_dirichlet =
+                    Twall * cells_[iCell].Face(iFace)->facevar.thermal_cond *
+                    cells_[iCell].Face(iFace)->GetArea() /
+                    cells_[iCell].GetNormalVectorToBoundary(iFace).norm();
+                B(iCell) += source_from_dirichlet * thickness_;
+            }
+            else if (cells_[iCell].Face(iFace)->GetBcType() == "Neumann")
+            {
+            }
+            else  // interior faces
+            {
+            }
+        }
+    }
+    std::cout << "B vector:\n" << B << std::endl;
+
+    /*--- A matrix ---*/
+    // For eigen sparse matrix
+    typedef Eigen::Triplet<double> T;
+    std::vector<T> tripletvec;
+    for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
+    {
+        for (size_t iFace = 0; iFace < 4; ++iFace)
+        {
+            if (cells_[iCell].Face(iFace)->GetTag() == "interior")
+            {
+                unsigned int neighbor_id =
+                    cells_[iCell].GetNeighborPtr(iFace)->GetID();
+                double ap = cells_[iCell].Face(iFace)->facevar.thermal_cond *
+                            cells_[iCell].Face(iFace)->GetArea() * thickness_ *
+                            cells_[iCell].GetMag_N1Vectors(iFace) /
+                            cells_[iCell].GetVectorToNeighbor(iFace).norm();
+                tripletvec.push_back(T(iCell, iCell, ap));
+                tripletvec.push_back(T(iCell, neighbor_id, -ap));
+                // std::cout << cells_[iCell].Face(iFace)->facevar.thermal_cond
+                //           << " " << cells_[iCell].Face(iFace)->GetArea() << " "
+                //           << cells_[iCell].GetMag_N1Vectors(iFace) << " "
+                //           << cells_[iCell].GetVectorToNeighbor(iFace).norm()
+                //           << std::endl;
+            }
+            else if (cells_[iCell].Face(iFace)->GetBcType() == "Dirichlet")
+            {
+                double ap =
+                    cells_[iCell].Face(iFace)->facevar.thermal_cond *
+                    cells_[iCell].Face(iFace)->GetArea() * thickness_ /
+                    cells_[iCell].GetNormalVectorToBoundary(iFace).norm();
+                tripletvec.push_back(T(iCell, iCell, ap));
+            }
+        }
+    }
+    A.setFromTriplets(tripletvec.begin(), tripletvec.end());
+    std::cout << "A matrix: \n" << A << std::endl;
+}
+void HeatDiffusion2d::Solve()
+{
+    /*--- Set LSE ---*/
+    ConstructMatrices();
+
+    /*--- Solve LSE ---*/
+    Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int> >
+        solver;
+    solver.compute(A);
+    if (solver.info() != Eigen::Success)
+    {
+        std::cerr << "decomposition failed" << std::endl;
+    }
+    T = solver.solve(B);
+    if (solver.info() != Eigen::Success)
+    {
+        std::cerr << "solving failed" << std::endl;
+    }
+    std::cout << "Temperature Vector: \n" << T << std::endl;
+
+    /*--- Update variables ---*/
+    for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
+    {
+        cells_[iCell].cellvar.temperature = T(iCell);
     }
 }
-
-void HeatDiffusion2d::Solve() { InitializeMatrices(); }
 
 void HeatDiffusion2d::WriteResultsToVtk(std::string vtkfilename)
 {

@@ -29,6 +29,7 @@ private:
     void SetMarkersToFaces();
     void SetNeighborCells();
     void SetVectorsToNeighbors();
+    void SetN1Vectors();
 
     unsigned int nDim_;
     unsigned int nElement_;

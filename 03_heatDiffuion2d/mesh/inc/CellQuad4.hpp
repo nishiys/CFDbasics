@@ -52,6 +52,21 @@ public:
     {
         return normalvectorToBoundaries_[index];
     }
+    inline void SetMag_N1Vectors(unsigned int index)
+    {
+        if (pNeighbors_[index] != nullptr)
+        {
+            mag_n1Vectors_[index] =
+                1.0 / vectorToNeighbors_[index].norm() *
+                faces_[index].GetNormalVec().dot(vectorToNeighbors_[index]);
+        }
+    }
+    inline double GetMag_N1Vectors(unsigned int index) const
+    {
+        return mag_n1Vectors_[index];
+    }
+
+    inline double GetVolume() const { return volume_; }
 
     Variable cellvar;
 
@@ -62,6 +77,7 @@ private:
     std::array<CellQuad4*, 4> pNeighbors_;
     std::array<Eigen::Vector2d, 4> vectorToNeighbors_;
     std::array<Eigen::Vector2d, 4> normalvectorToBoundaries_;
+    std::array<double, 4> mag_n1Vectors_;
 
     void CheckFaceNormals();
     void CalcCentroid();

@@ -33,8 +33,10 @@ private:
 
     // Calculate initial cell values
     void CalcInitialValues();
-    // Matrix initialization
-    void InitializeMatrices();
+    // Cinstruct matrices
+    void ConstructMatrices();
+
+    double thickness_;
 
     // For Simultaneous Linear Equation
     //! Coefficient matrix

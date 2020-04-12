@@ -21,6 +21,7 @@ void SU2meshparser::LoadData()
     SetMarkersToFaces();
     SetNeighborCells();
     SetVectorsToNeighbors();
+    SetN1Vectors();
     PrintDebug();
 }
 
@@ -360,6 +361,16 @@ void SU2meshparser::SetVectorsToNeighbors()
     }
 }
 
+void SU2meshparser::SetN1Vectors()
+{
+    for (size_t iCell = 0; iCell < cellarray.size(); ++iCell)
+    {
+        for (size_t iFace = 0; iFace < 4; ++iFace)
+        {
+            cellarray[iCell].SetMag_N1Vectors(iFace);
+        }
+    }
+}
 void SU2meshparser::PrintDebug()
 {
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;

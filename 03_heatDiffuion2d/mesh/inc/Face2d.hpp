@@ -15,15 +15,16 @@ public:
 
     void FlipNormalVec();
 
-    inline Node2d* GetNode1() const { return pNode1_; };
-    inline Node2d* GetNode2() const { return pNode2_; };
-    // inline unsigned int GetID() const { return id_; };
-    inline Eigen::Vector2d GetNormalVec() const { return normalvec_; };
-    inline Eigen::Vector2d GetFaceCenter() const { return facecenter_; };
-    inline double GetArea() const { return area_; };
+    inline Node2d* GetNode1() const { return pNode1_; }
+    inline Node2d* GetNode2() const { return pNode2_; }
+    inline Eigen::Vector2d GetNormalVec() const { return normalvec_; }
+    inline Eigen::Vector2d GetFaceCenter() const { return facecenter_; }
+    inline double GetArea() const { return area_; }
 
-    inline void SetTag(std::string tagname) { tag_ = tagname; };
-    inline std::string GetTag() const { return tag_; };
+    inline void SetTag(std::string tagname) { tag_ = tagname; }
+    inline std::string GetTag() const { return tag_; }
+    inline void SetBcType(std::string bc_type) { bc_type_ = bc_type; }
+    inline std::string GetBcType() const { return bc_type_; }
 
     Variable facevar;
 
@@ -35,7 +36,7 @@ private:
     //! Tags set in .su2 file
     std::string tag_;
     //! Dirichlet, Neumann, Interior
-    std::string status_;
+    std::string bc_type_;
 
     Eigen::Vector2d normalvec_;
     Eigen::Vector2d facecenter_;
