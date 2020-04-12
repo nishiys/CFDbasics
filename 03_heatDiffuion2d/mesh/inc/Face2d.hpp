@@ -18,8 +18,8 @@ public:
     inline Node2d* GetNode1() const { return pNode1_; };
     inline Node2d* GetNode2() const { return pNode2_; };
     // inline unsigned int GetID() const { return id_; };
-    inline Eigen::VectorXd GetNormalVec() const { return normalvec_; };
-    inline Eigen::VectorXd GetFaceCenter() const { return facecenter_; };
+    inline Eigen::Vector2d GetNormalVec() const { return normalvec_; };
+    inline Eigen::Vector2d GetFaceCenter() const { return facecenter_; };
     inline double GetArea() const { return area_; };
 
     inline void SetTag(std::string tagname) { tag_ = tagname; };
@@ -37,8 +37,8 @@ private:
     //! Dirichlet, Neumann, Interior
     std::string status_;
 
-    Eigen::VectorXd normalvec_;
-    Eigen::VectorXd facecenter_;
+    Eigen::Vector2d normalvec_;
+    Eigen::Vector2d facecenter_;
     double area_;
 
     void CalcNormalVec();

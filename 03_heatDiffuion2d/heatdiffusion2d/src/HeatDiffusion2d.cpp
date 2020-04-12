@@ -56,7 +56,20 @@ void HeatDiffusion2d::SetInitialConditions(double init_temperature)
     }
 }
 
-void HeatDiffusion2d::Solve() {}
+void HeatDiffusion2d::InitializeMatrices()
+{
+    int nSize = cells_.size();
+    A.resize(nSize, nSize);
+    T.resize(nSize);
+    B.resize(nSize);
+
+    for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
+    {
+        T(iCell) = cells_[iCell].cellvar.temperature;
+    }
+}
+
+void HeatDiffusion2d::Solve() { InitializeMatrices(); }
 
 void HeatDiffusion2d::PrintDebug()
 {

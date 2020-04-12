@@ -1,5 +1,8 @@
 #pragma once
 
+// #include <Eigen/Core>
+#include <Eigen/Sparse>
+
 #include "SU2meshparser.hpp"
 
 namespace heatdiff
@@ -23,5 +26,16 @@ public:
 private:
     std::string meshfilename_;
     std::vector<CellQuad4> cells_;
+
+    // Matrix initialization
+    void InitializeMatrices();
+
+    // For Simultaneous Linear Equation
+    //! Coefficient matrix
+    Eigen::SparseMatrix<double> A;
+    //! Temperature vector
+    Eigen::VectorXd T;
+    //! Source vector
+    Eigen::VectorXd B;
 };
 }  // namespace heatdiff

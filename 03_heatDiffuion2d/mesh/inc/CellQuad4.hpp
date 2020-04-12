@@ -35,6 +35,14 @@ public:
             vectorToNeighbors_[index] =
                 (pNeighbors_[index]->GetCentroid() - centroid_);
         }
+        else
+        {
+            Eigen::Vector2d vectorToBoundary =
+                faces_[index].GetFaceCenter() - centroid_;
+            Eigen::Vector2d facenormal_vector = faces_[index].GetNormalVec();
+            double y_magnitude = vectorToBoundary.dot(facenormal_vector);
+            normalvectorToBoundaries_[index] = y_magnitude * facenormal_vector;
+        }
     }
     inline Eigen::Vector2d GetVectorToNeighbor(unsigned int index) const
     {
@@ -49,6 +57,7 @@ private:
     std::array<Face2d, 4> faces_;
     std::array<CellQuad4*, 4> pNeighbors_;
     std::array<Eigen::Vector2d, 4> vectorToNeighbors_;
+    std::array<Eigen::Vector2d, 4> normalvectorToBoundaries_;
 
     void CheckFaceNormals();
     void CalcCentroid();
