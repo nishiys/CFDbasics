@@ -1,10 +1,14 @@
 #pragma once
 
+#include <Eigen/Core>
 #include <array>
 #include <string>
+#include <vector>
 
+// #include "CellQuad4.hpp"
 #include "Variable.hpp"
 
+class CellQuad4;
 class Node2d
 {
 public:
@@ -12,13 +16,21 @@ public:
     Node2d(unsigned int id, double x, double y);
     ~Node2d();
 
-    inline unsigned int GetID() const { return id_; };
-    inline double GetX() const { return coords_[0]; };
-    inline double GetY() const { return coords_[1]; };
+    void AddCellPointer(CellQuad4* p_cellquad4);
+    unsigned int GetID() const;
+    Eigen::Vector2d GetCoords() const;
+    std::vector<CellQuad4*> GetCellPtrs();
+    void AddMarker(std::string marker);
+    bool IsInterior() const;
+    bool IsCorner() const;
 
     Variable nodevar;
 
 private:
     unsigned int id_;
-    std::array<double, 2> coords_;
+    Eigen::Vector2d coords_;
+    std::vector<CellQuad4*> pCellQuad4s_;
+
+    //! markers to detect the node status
+    std::vector<std::string> markers_;
 };

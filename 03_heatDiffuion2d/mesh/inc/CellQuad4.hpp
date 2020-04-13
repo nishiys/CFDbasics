@@ -5,9 +5,10 @@
 #include <vector>
 
 #include "Face2d.hpp"
-#include "Node2d.hpp"
+// #include "Node2d.hpp"
 #include "Variable.hpp"
 
+class Node2d;
 class CellQuad4
 {
 public:
@@ -16,57 +17,20 @@ public:
               Node2d* pNode4);
     ~CellQuad4();
 
-    inline unsigned int GetID() const { return id_; }
-    inline Node2d* GetNode(unsigned int index) const { return pNodes_[index]; }
-    inline Face2d* Face(unsigned int index) { return &faces_[index]; }
-    inline void SetNeighborPtr(unsigned int index, CellQuad4* pCellQuad)
-    {
-        pNeighbors_[index] = pCellQuad;
-    }
-    inline CellQuad4* GetNeighborPtr(unsigned int index) const
-    {
-        return pNeighbors_[index];
-    }
-    inline Eigen::Vector2d GetCentroid() const { return centroid_; }
-    inline void SetVectorToNeighbor(unsigned int index)
-    {
-        if (pNeighbors_[index] != nullptr)
-        {
-            vectorToNeighbors_[index] =
-                (pNeighbors_[index]->GetCentroid() - centroid_);
-        }
-        else
-        {
-            Eigen::Vector2d vectorToBoundary =
-                faces_[index].GetFaceCenter() - centroid_;
-            Eigen::Vector2d facenormal_vector = faces_[index].GetNormalVec();
-            double y_magnitude = vectorToBoundary.dot(facenormal_vector);
-            normalvectorToBoundaries_[index] = y_magnitude * facenormal_vector;
-        }
-    }
-    inline Eigen::Vector2d GetVectorToNeighbor(unsigned int index) const
-    {
-        return vectorToNeighbors_[index];
-    }
-    inline Eigen::Vector2d GetNormalVectorToBoundary(unsigned int index) const
-    {
-        return normalvectorToBoundaries_[index];
-    }
-    inline void SetMag_N1Vectors(unsigned int index)
-    {
-        if (pNeighbors_[index] != nullptr)
-        {
-            mag_n1Vectors_[index] =
-                1.0 / vectorToNeighbors_[index].norm() *
-                faces_[index].GetNormalVec().dot(vectorToNeighbors_[index]);
-        }
-    }
-    inline double GetMag_N1Vectors(unsigned int index) const
-    {
-        return mag_n1Vectors_[index];
-    }
-
-    inline double GetVolume() const { return volume_; }
+    unsigned int GetID() const;
+    Node2d* GetNode(unsigned int index) const;
+    Face2d* Face(unsigned int index);
+    void SetNeighborPtr(unsigned int index, CellQuad4* pCellQuad);
+    CellQuad4* GetNeighborPtr(unsigned int index) const;
+    Eigen::Vector2d GetCentroid() const;
+    void SetVectorToNeighbor(unsigned int index);
+    Eigen::Vector2d GetVectorToNeighbor(unsigned int index) const;
+    Eigen::Vector2d GetNormalVectorToBoundary(unsigned int index) const;
+    void SetMag_N1Vectors(unsigned int index);
+    double GetMag_N1Vectors(unsigned int index) const;
+    Eigen::Vector2d GetvectorToFace(unsigned int index) const;
+    Eigen::Vector2d GetVectorToNode(unsigned int index) const;
+    double GetVolume() const;
 
     Variable cellvar;
 
@@ -78,10 +42,14 @@ private:
     std::array<Eigen::Vector2d, 4> vectorToNeighbors_;
     std::array<Eigen::Vector2d, 4> normalvectorToBoundaries_;
     std::array<double, 4> mag_n1Vectors_;
+    std::array<Eigen::Vector2d, 4> vectorToFaces_;
+    std::array<Eigen::Vector2d, 4> vectorToNodes_;
 
     void CheckFaceNormals();
     void CalcCentroid();
     void CalcVolume();
+    void CalcVectorToFaces();
+    void CalcVectorToNodes();
 
     Eigen::Vector2d centroid_;
     double volume_;

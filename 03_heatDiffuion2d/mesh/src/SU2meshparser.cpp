@@ -18,10 +18,12 @@ void SU2meshparser::LoadData()
 {
     ReadFile();
     CreateQuadArray();
+    SetMarkersToNodes();
     SetMarkersToFaces();
     SetNeighborCells();
     SetVectorsToNeighbors();
     SetN1Vectors();
+    SetCellPointersOntoNodes();
     PrintDebug();
 }
 
@@ -111,7 +113,6 @@ void SU2meshparser::ReadFile()
         Node2d node_obj(id, x, y);
         nodearray[i] = node_obj;
     }
-
     // Get Markers
     std::getline(infile, line);
     if (line.find("NMARK") != std::string::npos)
@@ -177,13 +178,27 @@ void SU2meshparser::CreateQuadArray()
     for (size_t i = 0; i < element_table_.size(); ++i)
     {
         unsigned int id = element_table_[i][0];
-        Node2d& node1   = nodearray[element_table_[i][1]];
-        Node2d& node2   = nodearray[element_table_[i][2]];
-        Node2d& node3   = nodearray[element_table_[i][3]];
-        Node2d& node4   = nodearray[element_table_[i][4]];
+        Node2d* node1   = &nodearray[element_table_[i][1]];
+        Node2d* node2   = &nodearray[element_table_[i][2]];
+        Node2d* node3   = &nodearray[element_table_[i][3]];
+        Node2d* node4   = &nodearray[element_table_[i][4]];
 
-        CellQuad4 quad(id, &node1, &node2, &node3, &node4);
+        CellQuad4 quad(id, node1, node2, node3, node4);
         cellarray[i] = quad;
+    }
+}
+
+void SU2meshparser::SetMarkersToNodes()
+{
+    /*--- Set read tags to boundary nodes ---*/
+    for (size_t iTable = 0; iTable < marker_table_.marker_array.size();
+         ++iTable)
+    {
+        std::string mark = marker_table_.marker_array[iTable];
+        std::array<unsigned int, 2> markered_edge =
+            marker_table_.edge_array[iTable];
+        nodearray[markered_edge[0]].AddMarker(mark);
+        nodearray[markered_edge[1]].AddMarker(mark);
     }
 }
 
@@ -221,7 +236,7 @@ void SU2meshparser::SetMarkersToFaces()
             {
                 if (edge_flags[iEdge])
                 {
-                    cellarray[iCell].Face(iEdge)->SetTag(mark);
+                    cellarray[iCell].Face(iEdge)->SetMarker(mark);
                 }
             }
         }
@@ -232,9 +247,9 @@ void SU2meshparser::SetMarkersToFaces()
     {
         for (size_t iFace = 0; iFace < 4; ++iFace)
         {
-            if (cellarray[iCell].Face(iFace)->GetTag().empty())
+            if (cellarray[iCell].Face(iFace)->GetMarker().empty())
             {
-                cellarray[iCell].Face(iFace)->SetTag("interior");
+                cellarray[iCell].Face(iFace)->SetMarker("interior");
             }
         }
     }
@@ -286,7 +301,7 @@ void SU2meshparser::SetNeighborCells()
         for (size_t iFace = 0; iFace < isInterior.size(); ++iFace)
         {
             isInterior[iFace] =
-                (cellarray[iCell].Face(iFace)->GetTag() == "interior");
+                (cellarray[iCell].Face(iFace)->GetMarker() == "interior");
         }
 
         // Get nodes IDs that consist each cell edge
@@ -371,6 +386,19 @@ void SU2meshparser::SetN1Vectors()
         }
     }
 }
+
+void SU2meshparser::SetCellPointersOntoNodes()
+{
+    for (size_t iCell = 0; iCell < cellarray.size(); ++iCell)
+    {
+        for (size_t iNode = 0; iNode < 4; ++iNode)
+        {
+            unsigned int nodeID = cellarray[iCell].GetNode(iNode)->GetID();
+            nodearray[nodeID].AddCellPointer(&cellarray[iCell]);
+        }
+    }
+}
+
 void SU2meshparser::PrintDebug()
 {
     std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
@@ -388,9 +416,9 @@ void SU2meshparser::PrintDebug()
     std::cout << "\nNode array: " << std::endl;
     for (size_t i = 0; i < nodearray.size(); ++i)
     {
-        std::cout << nodearray[i].GetID() << "\t"  //
-                  << nodearray[i].GetX() << "\t"   //
-                  << nodearray[i].GetY() << std::endl;
+        std::cout << nodearray[i].GetID() << "\t"         //
+                  << nodearray[i].GetCoords()(0) << "\t"  //
+                  << nodearray[i].GetCoords()(1) << std::endl;
     }
 
     std::cout << "\nCell array: " << std::endl;
@@ -408,11 +436,11 @@ void SU2meshparser::PrintDebug()
     {
         for (size_t iFace = 0; iFace < 4; ++iFace)
         {
-            if (!cellarray[iCell].Face(iFace)->GetTag().empty())
+            if (!cellarray[iCell].Face(iFace)->GetMarker().empty())
             {
                 std::cout << "Cell " << cellarray[iCell].GetID()
                           << " has a face w/ tag "
-                          << cellarray[iCell].Face(iFace)->GetTag()
+                          << cellarray[iCell].Face(iFace)->GetMarker()
                           << std::endl;
             }
         }
@@ -481,8 +509,8 @@ void SU2meshparser::WriteVtkFile(std::string vtkfilename)
             << "double " << std::endl;
     for (unsigned int i = 0; i < nPoint_; ++i)
     {
-        outfile << nodearray[i].GetX() << "\t"  //
-                << nodearray[i].GetY() << "\t" << 0 << std::endl;
+        outfile << nodearray[i].GetCoords()(0) << "\t"  //
+                << nodearray[i].GetCoords()(1) << "\t" << 0 << std::endl;
     }
 
     outfile << "CELLS " << nElement_ << " " << 5 * nElement_ << std::endl;

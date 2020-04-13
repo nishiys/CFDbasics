@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 namespace heatdiff
 {
@@ -37,21 +38,32 @@ void HeatDiffusion2d::SetFlowConfig(double volumetric_source,
     }
 }
 
-void HeatDiffusion2d::SetBoundaryConditions(std::string tag,
+void HeatDiffusion2d::SetBoundaryConditions(std::string marker,
                                             std::string bc_type,
                                             double temperature)
 {
+    // Set face & nodal values
     for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
     {
         for (size_t iFace = 0; iFace < 4; ++iFace)
         {
-            if (cells_[iCell].Face(iFace)->GetTag() == tag)
+            if (cells_[iCell].Face(iFace)->GetMarker() == marker)
             {
                 if (bc_type == "Dirichlet")
                 {
+                    // Set face values
                     cells_[iCell].Face(iFace)->facevar.temperature =
                         temperature;
                     cells_[iCell].Face(iFace)->SetBcType(bc_type);
+                    // Set nodal values
+                    cells_[iCell].Face(iFace)->GetNode1()->nodevar.temperature =
+                        temperature;
+                    cells_[iCell].Face(iFace)->GetNode2()->nodevar.temperature =
+                        temperature;
+                }
+                else if (bc_type == "Neumann")
+                {
+                    //TODO
                 }
             }
         }
@@ -63,9 +75,17 @@ void HeatDiffusion2d::SetInitialConditions(double init_temperature)
     {
         for (size_t iFace = 0; iFace < 4; ++iFace)
         {
-            if (cells_[iCell].Face(iFace)->GetTag() == "interior")
+            if (cells_[iCell].Face(iFace)->GetMarker() == "interior")
             {
                 cells_[iCell].Face(iFace)->facevar.temperature =
+                    init_temperature;
+            }
+            else if (cells_[iCell].Face(iFace)->GetBcType() == "Neumann")
+            {
+                // Set nodal values
+                cells_[iCell].Face(iFace)->GetNode1()->nodevar.temperature =
+                    init_temperature;
+                cells_[iCell].Face(iFace)->GetNode2()->nodevar.temperature =
                     init_temperature;
             }
         }
@@ -102,6 +122,8 @@ void HeatDiffusion2d::ConstructMatrices()
         // volumetric contribution
         B(iCell) = cells_[iCell].cellvar.volumetric_source *
                    cells_[iCell].GetVolume() * thickness_;
+        std::cout << B(iCell) << " " << cells_[iCell].cellvar.volumetric_source
+                  << " " << cells_[iCell].GetVolume() << std::endl;
         // boundary contribution
         for (size_t iFace = 0; iFace < 4; ++iFace)
         {
@@ -116,6 +138,7 @@ void HeatDiffusion2d::ConstructMatrices()
             }
             else if (cells_[iCell].Face(iFace)->GetBcType() == "Neumann")
             {
+                //TODO
             }
             else  // interior faces
             {
@@ -132,7 +155,7 @@ void HeatDiffusion2d::ConstructMatrices()
     {
         for (size_t iFace = 0; iFace < 4; ++iFace)
         {
-            if (cells_[iCell].Face(iFace)->GetTag() == "interior")
+            if (cells_[iCell].Face(iFace)->GetMarker() == "interior")
             {
                 unsigned int neighbor_id =
                     cells_[iCell].GetNeighborPtr(iFace)->GetID();
@@ -142,11 +165,6 @@ void HeatDiffusion2d::ConstructMatrices()
                             cells_[iCell].GetVectorToNeighbor(iFace).norm();
                 tripletvec.push_back(T(iCell, iCell, ap));
                 tripletvec.push_back(T(iCell, neighbor_id, -ap));
-                // std::cout << cells_[iCell].Face(iFace)->facevar.thermal_cond
-                //           << " " << cells_[iCell].Face(iFace)->GetArea() << " "
-                //           << cells_[iCell].GetMag_N1Vectors(iFace) << " "
-                //           << cells_[iCell].GetVectorToNeighbor(iFace).norm()
-                //           << std::endl;
             }
             else if (cells_[iCell].Face(iFace)->GetBcType() == "Dirichlet")
             {
@@ -186,12 +204,77 @@ void HeatDiffusion2d::Solve()
     {
         // Cell value
         cells_[iCell].cellvar.temperature = T(iCell);
-        // Face value
-        //TODO
     }
 
     /*--- Calculate Nodal values ---*/
-    //TODO
+    CalcNodalValues();
+
+    // Face value
+    UpdateFaceValues();
+}
+
+void HeatDiffusion2d::CalcNodalValues()
+{
+    /*--- Calculate nodal value w/ weighted averaging ---*/
+    for (size_t iNode = 0; iNode < nodes_.size(); ++iNode)
+    {
+        if (nodes_[iNode].IsInterior() == true)
+        {
+            double numerator   = 0;
+            double denominator = 0;
+
+            for (size_t i = 0; i < nodes_[iNode].GetCellPtrs().size(); ++i)
+            {
+                // search nodeID in this cell that is the same as iNode
+                std::array<unsigned int, 4> nodeIDs_in_current_cell;
+                nodeIDs_in_current_cell[0] =
+                    nodes_[iNode].GetCellPtrs()[i]->GetNode(0)->GetID();
+                nodeIDs_in_current_cell[1] =
+                    nodes_[iNode].GetCellPtrs()[i]->GetNode(1)->GetID();
+                nodeIDs_in_current_cell[2] =
+                    nodes_[iNode].GetCellPtrs()[i]->GetNode(2)->GetID();
+                nodeIDs_in_current_cell[3] =
+                    nodes_[iNode].GetCellPtrs()[i]->GetNode(3)->GetID();
+
+                unsigned int flag;
+                for (unsigned int index = 0; index < 4; ++index)
+                {
+                    if (nodeIDs_in_current_cell[index] == iNode) flag = index;
+                }
+
+                numerator +=
+                    nodes_[iNode].GetCellPtrs()[i]->cellvar.temperature /
+                    nodes_[iNode]
+                        .GetCellPtrs()[i]
+                        ->GetVectorToNode(flag)
+                        .norm();
+                denominator += 1.0 / nodes_[iNode]
+                                         .GetCellPtrs()[i]
+                                         ->GetVectorToNode(flag)
+                                         .norm();
+            }
+
+            nodes_[iNode].nodevar.temperature = numerator / denominator;
+        }
+        else
+        {
+            //TODO: if neumann bc exists, you have to add here
+        }
+    }
+}
+
+void HeatDiffusion2d::UpdateFaceValues()
+{ /* w/ Nodal Avaraging scheme */
+    for (size_t iCell = 0; iCell < cells_.size(); ++iCell)
+    {
+        for (size_t iFace = 0; iFace < 4; ++iFace)
+        {
+            cells_[iCell].Face(iFace)->facevar.temperature =
+                (cells_[iCell].Face(iFace)->GetNode1()->nodevar.temperature +
+                 cells_[iCell].Face(iFace)->GetNode2()->nodevar.temperature) /
+                2.0;
+        }
+    }
 }
 
 void HeatDiffusion2d::WriteResultsToVtk(std::string vtkfilename)
@@ -210,8 +293,8 @@ void HeatDiffusion2d::WriteResultsToVtk(std::string vtkfilename)
             << "double " << std::endl;
     for (unsigned int i = 0; i < nodes_.size(); ++i)
     {
-        outfile << nodes_[i].GetX() << "\t"  //
-                << nodes_[i].GetY() << "\t" << 0 << std::endl;
+        outfile << nodes_[i].GetCoords()(0) << "\t"  //
+                << nodes_[i].GetCoords()(1) << "\t" << 0 << std::endl;
     }
 
     outfile << "CELLS " << cells_.size() << " " << 5 * cells_.size()
@@ -249,6 +332,15 @@ void HeatDiffusion2d::WriteResultsToVtk(std::string vtkfilename)
     {
         outfile << cells_[i].cellvar.temperature << std::endl;
     }
+
+    outfile << "POINT_DATA " << nodes_.size() << std::endl;
+    outfile << "SCALARS Temperature float" << std::endl;
+    outfile << "LOOKUP_TABLE default" << std::endl;
+    for (unsigned int i = 0; i < nodes_.size(); i++)
+    {
+        outfile << nodes_[i].nodevar.temperature << std::endl;
+    }
+
     std::cout << "File writing finished!" << std::endl;
 }
 

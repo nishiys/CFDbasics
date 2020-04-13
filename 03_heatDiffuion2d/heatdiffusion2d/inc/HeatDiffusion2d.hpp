@@ -35,6 +35,8 @@ private:
     void CalcInitialValues();
     // Cinstruct matrices
     void ConstructMatrices();
+    void UpdateFaceValues();
+    void CalcNodalValues();
 
     double thickness_;
 

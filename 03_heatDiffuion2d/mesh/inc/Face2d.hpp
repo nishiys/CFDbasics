@@ -21,8 +21,8 @@ public:
     inline Eigen::Vector2d GetFaceCenter() const { return facecenter_; }
     inline double GetArea() const { return area_; }
 
-    inline void SetTag(std::string tagname) { tag_ = tagname; }
-    inline std::string GetTag() const { return tag_; }
+    inline void SetMarker(std::string markername) { marker_ = markername; }
+    inline std::string GetMarker() const { return marker_; }
     inline void SetBcType(std::string bc_type) { bc_type_ = bc_type; }
     inline std::string GetBcType() const { return bc_type_; }
 
@@ -33,8 +33,8 @@ private:
     Node2d* pNode1_;
     Node2d* pNode2_;
 
-    //! Tags set in .su2 file
-    std::string tag_;
+    //! Marker set in .su2 file
+    std::string marker_;
     //! Dirichlet, Neumann, Interior
     std::string bc_type_;
 

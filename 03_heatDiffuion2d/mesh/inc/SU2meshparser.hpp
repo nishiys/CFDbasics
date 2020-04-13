@@ -27,9 +27,11 @@ private:
     void ReadFile();
     void CreateQuadArray();
     void SetMarkersToFaces();
+    void SetMarkersToNodes();
     void SetNeighborCells();
     void SetVectorsToNeighbors();
     void SetN1Vectors();
+    void SetCellPointersOntoNodes();
 
     unsigned int nDim_;
     unsigned int nElement_;
