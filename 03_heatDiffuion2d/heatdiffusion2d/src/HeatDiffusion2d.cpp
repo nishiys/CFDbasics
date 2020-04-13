@@ -122,8 +122,7 @@ void HeatDiffusion2d::ConstructMatrices()
         // volumetric contribution
         B(iCell) = cells_[iCell].cellvar.volumetric_source *
                    cells_[iCell].GetVolume() * thickness_;
-        std::cout << B(iCell) << " " << cells_[iCell].cellvar.volumetric_source
-                  << " " << cells_[iCell].GetVolume() << std::endl;
+
         // boundary contribution
         for (size_t iFace = 0; iFace < 4; ++iFace)
         {
