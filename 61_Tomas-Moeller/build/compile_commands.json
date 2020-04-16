@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/61_Tomas-Moeller/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++   -I../inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk   -o CMakeFiles/main.dir/src/TomasMoeller.cpp.o -c /Users/ysnishi/programs/CFDbasics/61_Tomas-Moeller/src/TomasMoeller.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/61_Tomas-Moeller/src/TomasMoeller.cpp"
+}
+]
