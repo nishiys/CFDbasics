@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/ysnishi/programs/CFDbasics/05_BoundaryLayer_RANS/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++   -I../inc   -fPIC -std=c++17 -O0 -Wall -Wextra -g -O0 -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk   -o CMakeFiles/bl_rans.dir/src/BoundaryLayerRansSolver.cpp.o -c /Users/ysnishi/programs/CFDbasics/05_BoundaryLayer_RANS/src/BoundaryLayerRansSolver.cpp",
+  "file": "/Users/ysnishi/programs/CFDbasics/05_BoundaryLayer_RANS/src/BoundaryLayerRansSolver.cpp"
+}
+]
